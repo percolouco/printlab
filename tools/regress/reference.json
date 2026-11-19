@@ -1,0 +1,68 @@
+{
+ "orca": "v2.5.1",
+ "plates": {
+  "cut#1": {
+   "layers": 95,
+   "grams": 14.53,
+   "time": "32m 5s",
+   "moves": 50592,
+   "hash": "50588a26fd0b5f58"
+  },
+  "lh#1": {
+   "layers": 126,
+   "grams": 5.26,
+   "time": "25m 0s",
+   "moves": 37904,
+   "hash": "b18a52648ce7f27d"
+  },
+  "misc#1": {
+   "layers": 50,
+   "grams": 2.11,
+   "time": "15m 8s",
+   "moves": 5053,
+   "hash": "08045ca0cd5c597e"
+  },
+  "mix#1": {
+   "layers": 30,
+   "grams": 7.54,
+   "time": "51m 57s",
+   "moves": 9754,
+   "hash": "f52b18f9f237eea5"
+  },
+  "paint#1": {
+   "layers": 200,
+   "grams": 36.26,
+   "time": "4h 5m 50s",
+   "moves": 105378,
+   "hash": "6338c62ed2dc6c6a"
+  },
+  "parts#1": {
+   "layers": 100,
+   "grams": 18.05,
+   "time": "2h 22m 57s",
+   "moves": 24199,
+   "hash": "33cdad481b7c5238"
+  },
+  "text#1": {
+   "layers": 105,
+   "grams": 18.15,
+   "time": "37m 29s",
+   "moves": 26468,
+   "hash": "ed5824ada1e4d5bb"
+  },
+  "ticks#1": {
+   "layers": 40,
+   "grams": 4.37,
+   "time": "18m 41s",
+   "moves": 8062,
+   "hash": "412c2afb07c68cef"
+  },
+  "two#1": {
+   "layers": 100,
+   "grams": 27.21,
+   "time": "3h 1m 31s",
+   "moves": 30702,
+   "hash": "6d5803a1fc8cf0bb"
+  }
+ }
+}

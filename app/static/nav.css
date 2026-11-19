@@ -1,0 +1,15 @@
+/* Barre de navigation PrintLab, partagée avec le Slicer (/slicer/). Mêmes règles que #nav dans style.css. */
+#nav{display:flex;align-items:center;gap:2px;background:var(--nav);border-bottom:1px solid var(--line);padding:0 18px;height:52px;position:relative;z-index:50;font:14px/1.4 var(--f-body)}
+#nav .brand{font:600 21px/1 var(--f-head);letter-spacing:.02em;padding:4px 18px 4px 12px;border-left:4px solid var(--pri);margin-right:6px;color:var(--text);text-decoration:none}
+#nav .sp{flex:1}
+#nav .top{background:none;border:0;font:inherit;font-size:14px;color:var(--mut);cursor:pointer;text-decoration:none;display:block;white-space:nowrap;
+  border-radius:0;padding:0 12px;height:52px;line-height:52px;border-bottom:2px solid transparent;border-top:2px solid transparent}
+#nav .top:hover,#nav .menu:hover>.top,#nav .menu:focus-within>.top{color:var(--text)}
+#nav .top.on{color:var(--text);border-bottom-color:var(--pri);font-weight:500}
+#nav .menu{position:relative}
+#nav .dd{display:none;position:absolute;top:100%;left:0;min-width:170px;background:var(--card);border:1px solid var(--line);border-radius:var(--r,6px);margin-top:-1px;padding:5px;box-shadow:var(--pop)}
+#nav .menu:hover .dd,#nav .menu:focus-within .dd{display:block}
+#nav .dd a{display:block;padding:7px 10px;border-radius:4px;color:var(--text);text-decoration:none}
+#nav .dd a:hover{background:var(--bg)}
+#nav [hidden]{display:none!important}
+@media(max-width:760px){#nav{padding:0 8px;overflow-x:auto;height:44px}#nav .top{height:44px;line-height:44px;padding:0 8px;font-size:13.5px}#nav .brand{font-size:18px;padding:4px 10px 4px 8px}#nav .menu .dd{display:none!important}}

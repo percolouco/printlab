@@ -1,0 +1,21 @@
+# PrintLab — exemple de déploiement.
+#   1. cp .env.example .env   puis renseigne au moins APP_PASSWORD
+#   2. docker compose up -d
+#   3. ouvre http://<ip-du-serveur>:7913
+services:
+  printlab:
+    image: ghcr.io/percolouco/printlab:latest   # ou un numéro de version, ex. :1.0.0
+    # Pour construire toi-même l'image depuis les sources, remplace la ligne « image » par :
+    # build: .
+    container_name: printlab
+    restart: unless-stopped
+    init: true
+    shm_size: "512mb"        # nécessaire au Slicer (OrcaSlicer)
+    env_file: .env
+    user: "1000:1000"        # propriétaire du dossier ./data
+    ports:
+      - "7913:8000"
+    volumes:
+      - ./data:/data         # base SQLite, photos, factures, réglages du Slicer : à sauvegarder
+      # Lecteur RFID USB (ACR122U) branché sur le serveur : décommente après avoir installé pcscd sur l'hôte
+      # - /run/pcscd:/run/pcscd

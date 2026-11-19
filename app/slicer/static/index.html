@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>PrintLab · Slicer</title>
+<link rel="icon" href="/slicer/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<link rel="stylesheet" href="/static/themes.css"><link rel="stylesheet" href="/static/nav.css"><link rel="stylesheet" href="/slicer/static/style.css">
+<script type="importmap">
+{ "imports": { "three": "/slicer/static/vendor/three.module.js", "three/addons/": "/slicer/static/vendor/addons/" } }
+</script>
+<script>try{const t=localStorage.getItem("pl-theme");if(t&&t!=="system")document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<!-- même barre que le reste de PrintLab (styles : /static/nav.css) -->
+<header id="nav"><a class="brand" href="/#/">PrintLab</a>
+<a class="top" href="/#/">Tableau de bord</a>
+<div class="menu" data-menu="printer"><a class="top" href="/#/printer">Imprimante ▾</a><div class="dd"><a href="/#/printer">Imprimante</a><a href="/#/files">Fichiers à imprimer</a><a href="/#/jobs">Impressions</a><a href="/#/backups">Fichiers &amp; sauvegardes</a></div></div>
+<div class="menu" data-menu="box"><a class="top" href="/#/box">Box ▾</a><div class="dd"><a href="/#/box">QIDI Box</a><a href="/#/rfid">Étiquettes RFID</a></div></div>
+<a class="top" data-menu="spools" href="/#/spools">Filaments</a>
+<a class="top" data-menu="invoices" href="/#/invoices">Factures</a>
+<a class="top" data-menu="models" href="/#/models">Modèles 3D</a>
+<a class="top on" data-menu="slicer" href="/slicer/">Slicer</a>
+<a class="top" data-menu="workshop" href="/#/workshop">Atelier</a>
+<span class="sp"></span><a class="top" href="/#/settings">Paramètres</a>
+</header>
+<script>try{const h=new Set(JSON.parse(localStorage.getItem("pl-hidden-menus")||"[]"));document.querySelectorAll("#nav [data-menu]").forEach(e=>{if(h.has(e.dataset.menu)&&e.dataset.menu!=="slicer")e.hidden=true})}catch(e){}</script>
+<header id="topbar">
+  <nav id="tabs">
+    <button data-tab="prepare" class="active">Préparer</button>
+    <button data-tab="preview">Aperçu</button>
+    <button data-tab="device">Imprimante <span id="dev-badge" class="badge"></span></button>
+  </nav>
+  <div class="top-right">
+    <div class="menu" id="project-menu">
+      <button class="btn ghost" id="btn-project">Projet ▾</button>
+      <div class="menu-list">
+        <button data-act="new">Nouveau projet</button>
+        <button data-act="open">Ouvrir un projet…</button>
+        <button data-act="open3mf">Ouvrir un projet .3mf (Orca, QIDI, Bambu)…</button>
+        <button data-act="save">Enregistrer le projet</button>
+        <button data-act="saveas">Enregistrer sous…</button>
+        <hr>
+        <button data-act="calib">Calibration…</button>
+        <button data-act="save3mf">Enregistrer en .3mf (Orca) — Ctrl+S</button>
+        <button data-act="export3mf">Télécharger le plateau découpé (.3mf)</button>
+        <button data-act="stl">Exporter le plateau en STL</button>
+        <button data-act="stlall">Exporter tous les objets en STL</button>
+        <button data-act="lang">Langue : English</button>
+        <button data-act="logout">Se déconnecter</button>
+      </div>
+    </div>
+    <span id="orca-version" class="muted small"></span>
+  </div>
+</header>
+
+<main>
+  <!-- ===================== PRÉPARER ===================== -->
+  <section id="tab-prepare" class="tab active">
+    <aside id="sidebar">
+      <div class="panel" data-fold="printer">
+        <div class="panel-title"><span class="fold-t" title="Replier / déplier">Imprimante</span>
+          <span class="actions"><button class="icon" id="edit-machine" title="Modifier le profil imprimante"><i data-icon="edit" data-size="15"></i></button></span>
+        </div>
+        <div class="printer-row">
+          <img id="machine-cover" alt="">
+          <select id="sel-machine"></select>
+          <label class="bed-row bed-pick" title="Type de plateau : détermine la température de plateau utilisée (réglages du filament)">
+            <img id="bed-icon" alt=""><select id="sel-bed" aria-label="Type de plateau"></select>
+          </label>
+        </div>
+        <div id="bed-warn" class="small hidden" style="color:var(--warn);margin-top:4px"></div>
+      </div>
+
+      <div class="panel" data-fold="filaments">
+        <div class="panel-title"><span class="fold-t" title="Replier / déplier">Filaments</span>
+          <span class="actions">
+            <button class="btn small" id="sync-box" title="Récupérer les filaments chargés dans la QIDI Box"><i data-icon="sync" data-size="13"></i> Box</button>
+            <button class="icon" id="favs-btn" title="Mes filaments : choisir ceux proposés dans les menus"><i data-icon="edit" data-size="15"></i></button>
+            <button class="icon" id="add-filament" title="Ajouter un filament"><i data-icon="plus" data-size="15"></i></button>
+            <button class="icon" id="flush-btn" title="Volumes de purge"><i data-icon="drop" data-size="15"></i></button>
+          </span>
+        </div>
+        <div id="filament-list"></div>
+      </div>
+
+      <div class="panel grow" data-fold="settings">
+        <div class="panel-title"><span class="fold-t" title="Replier / déplier">Réglages</span>
+          <span class="actions">
+            <button class="icon" id="modified-btn" title="Réglages modifiés (projet, filaments, objets)"><i data-icon="edit" data-size="15"></i></button>
+            <select id="level-sel" class="small" title="Niveau d'affichage des réglages (comme Orca : Simple / Avancé ; Développeur = mode développeur des préférences)">
+              <option value="0">Simple</option><option value="1">Avancé</option><option value="2">Développeur</option></select>
+          </span>
+        </div>
+        <div class="process-row">
+          <select id="sel-process"></select>
+          <button class="icon" id="save-process" title="Enregistrer comme profil utilisateur"><i data-icon="save" data-size="15"></i></button>
+          <button class="icon" id="profiles-btn" title="Gérer les profils : comparer, importer, exporter, supprimer">⇄</button>
+        </div>
+        <div class="scope-row">
+          <div class="seg" id="scope-seg">
+            <button data-scope="global" class="active">Global</button>
+            <button data-scope="object" id="scope-object" disabled>Objet</button>
+          </div>
+          <input type="search" id="opt-search" placeholder="Rechercher un réglage…">
+        </div>
+        <div id="settings-pages" class="seg pages"></div>
+        <div id="settings-body"></div>
+      </div>
+    </aside>
+
+    <div id="viewport-wrap">
+      <div id="toolbar">
+        <button class="tool" id="t-add" title="Ajouter des modèles (Ctrl+I)"><i data-icon="add"></i><span>Ajouter</span></button>
+        <button class="tool" id="t-del" title="Supprimer la sélection (Suppr) — tout supprimer : Ctrl+D"><i data-icon="trash"></i><span>Suppr.</span></button>
+        <button class="tool" id="t-dup" title="Cloner (Ctrl+K ou +)"><i data-icon="copy"></i><span>Dupliquer</span></button>
+        <button class="tool" id="t-undo" title="Annuler (Ctrl+Z)" disabled><i data-icon="undo"></i><span>Annuler</span></button>
+        <button class="tool" id="t-redo" title="Rétablir (Ctrl+Y)" disabled><i data-icon="redo"></i><span>Rétablir</span></button>
+        <span class="sep"></span>
+        <button class="tool" id="t-arrange" title="Disposer automatiquement (A) — options : clic droit">▦<span>Disposer</span></button>
+        <button class="tool" id="t-center" title="Centrer sur le plateau">⊕<span>Centrer</span></button>
+        <span class="sep"></span>
+        <button class="tool mode active" data-mode="translate" title="Déplacer (M)">✥<span>Déplacer</span></button>
+        <button class="tool mode" data-mode="rotate" title="Pivoter (R)">⟳<span>Pivoter</span></button>
+        <button class="tool mode" data-mode="scale" title="Mettre à l'échelle (S)">⤢<span>Échelle</span></button>
+        <button class="tool" id="t-layflat" title="Poser sur une face (F) : cliquer ensuite la face à poser sur le plateau">⬓<span>Face au sol</span></button>
+        <button class="tool" id="t-modifier" title="Ajouter un modificateur ou un bloqueur de support">◫<span>Modif.</span></button>
+        <button class="tool" id="t-orient" title="Orientation automatique (Q), algorithme d'Orca : objet sélectionné, ou tout le plateau (Maj+Q)">⟲<span>Orienter</span></button>
+        <button class="tool" id="t-text" title="Texte 3D en relief, en creux ou en modificateur, posé sur une face (T)">A<span>Texte</span></button>
+        <button class="tool" id="t-svg" title="Forme SVG en relief, en creux ou en modificateur, posée sur une face">✎<span>SVG</span></button>
+        <button class="tool" id="t-paint" title="Peindre (comme Orca) : supports L, couture P, couleurs N, fuzzy skin H">🖌<span>Peindre</span></button>
+        <button class="tool" id="t-cut" title="Couper l'objet par un plan (avec connecteurs), comme l'outil Coupe d'Orca (C)">✂<span>Couper</span></button>
+        <button class="tool" id="t-split" title="Séparer l'objet en objets ou en pièces (parties non reliées)">⧉<span>Séparer</span></button>
+        <button class="tool" id="t-measure" title="Mesurer (U) : clique deux points sur les objets">📏<span>Mesure</span></button>
+        <button class="tool" id="t-bool" title="Booléen (B) : union, différence ou intersection entre deux pièces d'un même objet">⊖<span>Booléen</span></button>
+        <button class="tool" id="t-texture" title="Texture en relief (D) : cuir, moletage, hexagones… appliqués à la surface de l'objet">▦<span>Texture</span></button>
+        <button class="tool" id="t-assembly" title="Assemblage (Y) : plaquer une face d'une pièce contre la face d'une autre">⧈<span>Assemblage</span></button>
+        <button class="tool" id="t-align" title="Aligner / répartir les objets sélectionnés (Ctrl+clic), ou un objet par rapport au plateau">⫼<span>Aligner</span></button>
+        <button class="tool" id="t-simplify" title="Simplifier : réduire le nombre de triangles (gros modèles)">◇<span>Simplifier</span></button>
+        <button class="tool" id="t-brim" title="Oreilles de bordure (E) : petites pastilles de bordure aux coins de la première couche">◔<span>Oreilles</span></button>
+        <button class="tool" id="t-ranges" title="Modificateur par plage de hauteur : réglages différents entre deux hauteurs de l'objet">☰<span>Plages</span></button>
+        <button class="tool" id="t-merge" title="Assembler les objets sélectionnés (Ctrl+clic dans la liste) en un objet à plusieurs pièces">⊞<span>Assembler</span></button>
+        <span class="sep"></span>
+        <button class="tool" id="t-view" title="Changer de vue (Ctrl+0 défaut, Ctrl+1 dessus, Ctrl+2 dessous, Ctrl+3 face, Ctrl+4 arrière, Ctrl+5 gauche, Ctrl+6 droite)"><i data-icon="eye"></i><span>Vue</span></button>
+        <button class="tool" id="t-keys" title="Raccourcis clavier (?)">⌨<span>Raccourcis</span></button>
+        <button class="tool" id="t-tour" title="Visite guidée du Slicer">?<span>Aide</span></button>
+      </div>
+      <div id="viewport"></div>
+      <div id="drop-hint">Dépose tes fichiers STL, 3MF, OBJ ou STEP ici</div>
+
+      <div id="object-panel" class="floating hidden">
+        <div class="panel-title" id="obj-head"><span id="obj-name">Objet</span><button class="icon" id="obj-close">✕</button></div>
+        <div class="grid3" id="obj-body">
+          <label>X<input type="number" step="0.1" id="pos-x"></label>
+          <label>Y<input type="number" step="0.1" id="pos-y"></label>
+          <label>Z<input type="number" step="0.1" id="pos-z"></label>
+          <label>Rot X°<input type="number" step="1" id="rot-x"></label>
+          <label>Rot Y°<input type="number" step="1" id="rot-y"></label>
+          <label>Rot Z°<input type="number" step="1" id="rot-z"></label>
+          <label>Éch. X %<input type="number" step="1" id="scl-x"></label>
+          <label>Éch. Y %<input type="number" step="1" id="scl-y"></label>
+          <label>Éch. Z %<input type="number" step="1" id="scl-z"></label>
+          <label>Taille X<input type="number" step="0.1" id="size-x"></label>
+          <label>Taille Y<input type="number" step="0.1" id="size-y"></label>
+          <label>Taille Z<input type="number" step="0.1" id="size-z"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="uniform" checked> Échelle uniforme</label>
+        <div class="row gap obj-tools"><span class="muted small">Miroir</span><button class="btn small" data-mirror="0">X</button><button class="btn small" data-mirror="1">Y</button><button class="btn small" data-mirror="2">Z</button>
+          <span style="flex:1"></span><button class="btn small" id="obj-repair" title="Réparer le maillage (trous, faces inversées, doublons)">Réparer</button></div>
+        <button class="btn small" id="obj-layers" style="width:100%;margin-top:6px" title="Hauteur de couche variable (adaptative, lissage, édition), comme Orca">Hauteur de couche variable…</button>
+        <label class="check hidden" id="obj-plate-row">Plateau <select id="obj-plate" style="margin-left:6px"></select></label>
+      </div>
+
+      <div id="paint-panel" class="floating hidden"></div>
+      <div id="brim-panel" class="floating hidden"></div>
+      <div id="objects-panel" class="floating">
+        <div class="panel-title">Objets <span class="muted small" id="obj-count"></span></div>
+        <div id="object-list"></div>
+      </div>
+
+      <div id="slice-bar">
+        <div id="plates"></div>
+        <span id="plate-info" class="muted small"></span>
+        <button class="btn big hidden" id="btn-slice-all" title="Découper tous les plateaux non vides">Tout découper</button>
+        <button class="btn primary big" id="btn-slice">Découper le plateau</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== APERÇU ===================== -->
+  <section id="tab-preview" class="tab">
+    <div id="preview-wrap">
+      <div id="preview-viewport"></div>
+      <div id="preview-empty" class="center-msg">Découpe le plateau pour voir l'aperçu.</div>
+      <div id="layer-slider-wrap" class="hidden">
+        <button class="btn small" id="tick-add" title="Ajouter à cette couche : pause, changement de filament, G-code personnalisé (comme le « + » du curseur d'Orca)">+</button>
+        <div class="layer-label" id="layer-top-label"></div>
+        <input type="range" id="layer-top" orient="vertical">
+        <input type="range" id="layer-bottom" orient="vertical">
+        <div class="layer-label" id="layer-bottom-label"></div>
+      </div>
+      <div id="move-slider-wrap" class="hidden">
+        <button class="btn small" id="play-btn" title="Lecture animée de l'impression (Espace)">▶</button>
+        <select id="play-speed" class="small" title="Vitesse de lecture"><option value="1">×1</option><option value="4" selected>×4</option><option value="16">×16</option><option value="64">×64</option></select>
+        <input type="range" id="move-slider">
+      </div>
+      <div id="ticks" class="floating hidden"><div class="panel-title">Changements par couche</div><div id="ticks-list"></div></div>
+      <div id="legend" class="floating hidden">
+        <div class="panel-title">
+          <select id="color-scheme">
+            <option value="type">Type de ligne</option><option value="colorprint">Impression couleur</option>
+            <option value="speed">Vitesse</option><option value="actual">Vitesse réelle</option><option value="accel">Accélération</option><option value="jerk">Jerk</option>
+            <option value="height">Hauteur de couche</option><option value="width">Largeur de ligne</option>
+            <option value="flow">Débit volumétrique</option><option value="layerTime">Temps de couche (linéaire)</option>
+            <option value="layerTimeLog">Temps de couche (logarithmique)</option><option value="fan">Vitesse du ventilateur</option>
+            <option value="temp">Température</option><option value="pa">Pressure advance</option><option value="tool">Filament</option>
+          </select>
+        </div>
+        <div id="legend-items"></div>
+        <div class="opts">
+        <label class="check small"><input type="checkbox" id="show-travel"> <span class="swatch" style="background:#38489B"></span> Déplacements</label>
+        <label class="check small"><input type="checkbox" data-opt="seam"> <span class="swatch" style="background:#E6E6E6"></span> Coutures</label>
+        <label class="check small"><input type="checkbox" data-opt="retract"> <span class="swatch" style="background:#CD22D6"></span> Rétractions</label>
+        <label class="check small"><input type="checkbox" data-opt="unretract"> <span class="swatch" style="background:#49ADCF"></span> Dérétractions</label>
+        <label class="check small"><input type="checkbox" data-opt="wipe"> <span class="swatch" style="background:#FFFF00"></span> Essuyages</label>
+        <label class="check small"><input type="checkbox" data-opt="toolchange"> <span class="swatch" style="background:#C1BE63"></span> Changements de filament</label>
+        <label class="check small"><input type="checkbox" data-opt="pause"> <span class="swatch" style="background:#52F083"></span> Pauses</label>
+        <label class="check small"><input type="checkbox" id="show-model" > Modèle</label></div>
+      </div>
+      <div id="stats" class="floating hidden"></div>
+    </div>
+  </section>
+
+  <!-- ===================== IMPRIMANTE ===================== -->
+  <section id="tab-device" class="tab">
+    <div id="device">
+      <div class="dev-col">
+        <div class="card">
+          <div class="card-title">Caméra</div>
+          <div class="cam"><img id="cam" alt="Caméra de l'imprimante"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Impression en cours</div>
+          <div id="job-info"></div>
+          <div class="progress"><div id="job-progress"></div></div>
+          <div class="row gap">
+            <button class="btn" id="p-pause"><i data-icon="pause" data-size="14"></i> Pause</button>
+            <button class="btn" id="p-resume"><i data-icon="play" data-size="14"></i> Reprendre</button>
+            <button class="btn danger" id="p-cancel"><i data-icon="stop" data-size="14"></i> Annuler</button>
+          </div>
+        </div>
+      </div>
+      <div class="dev-col">
+        <div class="card">
+          <div class="card-title">Températures</div>
+          <div id="temps"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">QIDI Box <span class="muted small" id="box-env"></span></div>
+          <div id="box"></div>
+          <div class="row gap wrap">
+            <button class="btn small" id="box-rfid">Lire les RFID</button>
+            <button class="btn small" id="box-dry">Sécher…</button>
+            <button class="btn small" id="box-query">État détaillé</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Commandes</div>
+          <div class="row gap wrap">
+            <button class="btn small" data-gcode="G28">Origine (G28)</button>
+            <button class="btn small" data-gcode="BED_MESH_CALIBRATE">Nivellement</button>
+            <button class="btn small" data-gcode="M84">Moteurs off</button>
+            <button class="btn small" id="light-btn">Éclairage</button>
+            <button class="btn small danger" id="estop">Arrêt d'urgence</button>
+          </div>
+          <div class="console" id="console"></div>
+          <form id="console-form" class="row gap"><input id="console-input" placeholder="Commande G-code (ex. M104 S200)"><button class="btn">Envoyer</button></form>
+        </div>
+      </div>
+      <div class="dev-col">
+        <div class="card">
+          <div class="card-title">Fichiers sur l'imprimante</div>
+          <div id="files"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">File d'attente <span class="muted small" id="queue-state"></span>
+            <span class="actions"><button class="btn small" id="queue-start" title="Démarrer la file : les impressions s'enchaînent">Démarrer</button><button class="btn small" id="queue-pause">Pause</button></span></div>
+          <div id="queue"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Historique</div>
+          <div id="history"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<input type="file" id="file-3mf" accept=".3mf" class="hidden"><input type="file" id="file-input" multiple accept=".stl,.3mf,.obj,.step,.stp,.ply,.amf,.off,.glb,.gltf" hidden>
+<div id="modal" class="modal hidden"><div class="modal-box"><div class="modal-head"><span id="modal-title"></span><button class="icon" id="modal-close">✕</button></div><div id="modal-body"></div></div></div>
+<div id="toasts"></div>
+<div id="busy" class="hidden"><div class="spinner"></div><div id="busy-text"></div></div>
+
+<script type="module" src="/slicer/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PrintLab</title><link rel="icon" href="/favicon.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap"><link rel="stylesheet" href="/static/themes.css?v={{v}}"><link rel="stylesheet" href="/static/style.css?v={{v}}">
+<script>try{const t=localStorage.getItem("pl-theme");if(t&&t!=="system")document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+body.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+.lc{width:min(380px,100%);background:var(--card);border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:6px;padding:28px 26px 22px;display:grid;gap:12px}
+.lc .lab{font:500 11px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+.lc h1{margin:0;font-size:34px;line-height:1.05;display:flex;align-items:center;gap:10px}.lc h1 img{width:34px;height:34px}
+.lc p.sub{margin:0 0 6px;color:var(--mut)}
+.lc input{width:100%;padding:11px 12px;font-size:16px;background:var(--bg)}
+.lc button{width:100%;padding:11px;font-size:16px}
+.lc .err{min-height:20px;margin:0;font-size:13px}
+</style></head>
+<body class="login"><form id="f" class="lc"><span class="lab">Atelier d'impression 3D</span>
+<h1><img src="/favicon.svg" alt="">PrintLab</h1><p class="sub">Filaments · Imprimante · QIDI Box</p>
+<input type="password" id="pw" placeholder="Mot de passe" autofocus autocomplete="current-password">
+<button class="btn primary">Se connecter</button><p id="err" class="err"></p></form>
+<script>
+f.onsubmit=async e=>{e.preventDefault();err.textContent='';const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw.value})});
+if(r.ok)location='/';else{err.textContent=(await r.json()).detail||'Erreur';pw.select()}}
+</script></body></html>

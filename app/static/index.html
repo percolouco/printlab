@@ -1,0 +1,15 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PrintLab</title><link rel="icon" href="/favicon.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap"><link rel="stylesheet" href="/static/themes.css?v={{v}}"><link rel="stylesheet" href="/static/style.css?v={{v}}">
+<script>try{const t=localStorage.getItem("pl-theme");if(t&&t!=="system")document.documentElement.dataset.theme=t}catch(e){}</script></head>
+<body><header id="nav"><a class="brand" href="#/">PrintLab</a>
+<a class="top" href="#/">Tableau de bord</a>
+<div class="menu" data-menu="printer"><button class="top" type="button">Imprimante ▾</button><div class="dd"><a href="#/printer">Imprimante</a><a href="#/files">Fichiers à imprimer</a><a href="#/jobs">Impressions</a><a href="#/backups">Fichiers &amp; sauvegardes</a></div></div>
+<div class="menu" data-menu="box"><button class="top" type="button">Box ▾</button><div class="dd"><a href="#/box">QIDI Box</a><a href="#/rfid">Étiquettes RFID</a></div></div>
+<a class="top" data-menu="spools" href="#/spools" data-also="filaments,vendors">Filaments</a>
+<a class="top" data-menu="invoices" href="#/invoices">Factures</a>
+<a class="top" data-menu="models" href="#/models">Modèles 3D</a>
+<a class="top" data-menu="slicer" href="/slicer/">Slicer</a>
+<a class="top" data-menu="workshop" href="#/workshop">Atelier</a>
+<span class="sp"></span><input id="gs" class="gsearch" placeholder="Rechercher — ex. « noir » ou « pla »" autocomplete="off"><button class="btn primary add" type="button" onclick="spoolNew()">+ Ajouter une bobine</button><a class="top" href="#/settings">Paramètres</a>
+</header><main id="main"></main><div id="modal" class="modal" hidden></div><div id="toast"></div>
+<script src="/static/app.js?v={{v}}"></script></body></html>

@@ -1,0 +1,307 @@
+{
+"QFA00": {
+"name": "QIDI PLA Basic",
+"type": "PLA",
+"vendor": "QIDI"
+},
+"QFA01": {
+"name": "QIDI PLA Matte Basic",
+"type": "PLA",
+"vendor": "QIDI"
+},
+"QFA02": {
+"name": "QIDI PLA Rapido",
+"type": "PLA",
+"vendor": "QIDI"
+},
+"QFA03": {
+"name": "QIDI PLA Rapido Matte",
+"type": "PLA",
+"vendor": "QIDI"
+},
+"QFA04": {
+"name": "QIDI PLA Rapido Metal",
+"type": "PLA",
+"vendor": "QIDI"
+},
+"QFA05": {
+"name": "QIDI PLA Silk",
+"type": "PLA",
+"vendor": "QIDI"
+},
+"QFA16": {
+"name": "QIDI WOOD Rapido",
+"type": "PLA",
+"vendor": "QIDI"
+},
+"QFA50": {
+"name": "QIDI PLA-CF",
+"type": "PLA-CF",
+"vendor": "QIDI"
+},
+"QFA90": {
+"name": "Generic PLA",
+"type": "PLA",
+"vendor": "Generic"
+},
+"QFA91": {
+"name": "Generic PLA+",
+"type": "PLA",
+"vendor": "Generic"
+},
+"QFA92": {
+"name": "Generic PLA Silk",
+"type": "PLA",
+"vendor": "Generic"
+},
+"QFB01": {
+"name": "QIDI ASA",
+"type": "ASA",
+"vendor": "QIDI"
+},
+"QFB02": {
+"name": "QIDI ASA-Aero",
+"type": "ASA-AERO",
+"vendor": "QIDI"
+},
+"QFB50": {
+"name": "QIDI ABS-GF",
+"type": "ABS-GF",
+"vendor": "QIDI"
+},
+"QFB51": {
+"name": "QIDI ASA-CF20 Core",
+"type": "ASA-CF",
+"vendor": "QIDI"
+},
+"QFB53": {
+"name": "QIDI ABS Odorless",
+"type": "ABS",
+"vendor": "QIDI"
+},
+"QFB54": {
+"name": "QIDI ABS Rapido",
+"type": "ABS",
+"vendor": "QIDI"
+},
+"QFB55": {
+"name": "QIDI ABS Rapido Metal",
+"type": "ABS",
+"vendor": "QIDI"
+},
+"QFB91": {
+"name": "Generic ABS",
+"type": "ABS",
+"vendor": "Generic"
+},
+"QFC02": {
+"name": "QIDI PC/ABS-FR",
+"type": "PC-ABS-FR",
+"vendor": "QIDI"
+},
+"QFC90": {
+"name": "Generic PC",
+"type": "PC",
+"vendor": "Generic"
+},
+"QFG00": {
+"name": "QIDI PETG Basic",
+"type": "PETG",
+"vendor": "QIDI"
+},
+"QFG02": {
+"name": "QIDI PETG Rapido",
+"type": "PETG",
+"vendor": "QIDI"
+},
+"QFG03": {
+"name": "QIDI PETG Tough",
+"type": "PETG",
+"vendor": "QIDI"
+},
+"QFG04": {
+"name": "QIDI PETG Translucent",
+"type": "PETG",
+"vendor": "QIDI"
+},
+"QFG50": {
+"name": "QIDI PETG-CF",
+"type": "PETG-CF",
+"vendor": "QIDI"
+},
+"QFG51": {
+"name": "QIDI PETG-GF",
+"type": "PETG-GF",
+"vendor": "QIDI"
+},
+"QFG90": {
+"name": "Generic PETG",
+"type": "PETG",
+"vendor": "Generic"
+},
+"QFL30": {
+"name": "Bambu PLA",
+"type": "PLA",
+"vendor": "Bambu"
+},
+"QFL31": {
+"name": "Bambu PETG",
+"type": "PETG",
+"vendor": "Bambu"
+},
+"QFL32": {
+"name": "Bambu ABS",
+"type": "ABS",
+"vendor": "Bambu"
+},
+"QFL33": {
+"name": "Bambu ASA",
+"type": "ASA",
+"vendor": "Bambu"
+},
+"QFL40": {
+"name": "Artillery PLA",
+"type": "PLA",
+"vendor": "Artillery"
+},
+"QFL41": {
+"name": "Artillery PETG",
+"type": "PETG",
+"vendor": "Artillery"
+},
+"QFL42": {
+"name": "Artillery ABS",
+"type": "ABS",
+"vendor": "Artillery"
+},
+"QFL43": {
+"name": "Artillery ASA",
+"type": "ASA",
+"vendor": "Artillery"
+},
+"QFL50": {
+"name": "SUNLU PLA",
+"type": "PLA",
+"vendor": "SUNLU"
+},
+"QFL51": {
+"name": "SUNLU PETG",
+"type": "PETG",
+"vendor": "SUNLU"
+},
+"QFL52": {
+"name": "SUNLU ABS",
+"type": "ABS",
+"vendor": "SUNLU"
+},
+"QFL53": {
+"name": "SUNLU ASA",
+"type": "ASA",
+"vendor": "SUNLU"
+},
+"QFL70": {
+"name": "eSUN PLA",
+"type": "PLA",
+"vendor": "eSUN"
+},
+"QFL71": {
+"name": "eSUN PETG",
+"type": "PETG",
+"vendor": "eSUN"
+},
+"QFL72": {
+"name": "eSUN ABS",
+"type": "ABS",
+"vendor": "eSUN"
+},
+"QFL73": {
+"name": "eSUN ASA",
+"type": "ASA",
+"vendor": "eSUN"
+},
+"QFN04": {
+"name": "QIDI PAHT-CF",
+"type": "PAHT-CF",
+"vendor": "QIDI"
+},
+"QFN05": {
+"name": "QIDI PA6-CF",
+"type": "PA6-CF",
+"vendor": "QIDI"
+},
+"QFN12": {
+"name": "QIDI PA12-CF",
+"type": "PA12-CF",
+"vendor": "QIDI"
+},
+"QFN14": {
+"name": "QIDI PAHT-GF",
+"type": "PAHT-GF",
+"vendor": "QIDI"
+},
+"QFN20": {
+"name": "QIDI UltraPA",
+"type": "UltraPA",
+"vendor": "QIDI"
+},
+"QFN21": {
+"name": "QIDI UltraPA-CF25",
+"type": "UltraPA-CF25",
+"vendor": "QIDI"
+},
+"QFP01": {
+"name": "QIDI PPS-CF",
+"type": "PPS-CF",
+"vendor": "QIDI"
+},
+"QFP02": {
+"name": "QIDI PPS-GF",
+"type": "PPS-GF",
+"vendor": "QIDI"
+},
+"QFS01": {
+"name": "QIDI Support For PET/PA",
+"type": "PA-S",
+"vendor": "QIDI"
+},
+"QFS03": {
+"name": "QIDI Support For PAHT",
+"type": "PAHT-S",
+"vendor": "QIDI"
+},
+"QFT01": {
+"name": "QIDI PET-CF",
+"type": "PET-CF",
+"vendor": "QIDI"
+},
+"QFT02": {
+"name": "QIDI PET-GF",
+"type": "PET-GF",
+"vendor": "QIDI"
+},
+"QFU00": {
+"name": "QIDI TPU-Aero",
+"type": "TPU-AERO",
+"vendor": "QIDI"
+},
+"QFU01": {
+"name": "QIDI TPU 95A-HF",
+"type": "TPU",
+"vendor": "QIDI"
+},
+"QFU02": {
+"name": "QIDI TPU-GF",
+"type": "TPU-GF",
+"vendor": "QIDI"
+},
+"QFU03": {
+"name": "QIDI PEBA 95A",
+"type": "PEBA",
+"vendor": "QIDI"
+},
+"QFU91": {
+"name": "Generic TPU 95A",
+"type": "TPU",
+"vendor": "Generic"
+}
+}
