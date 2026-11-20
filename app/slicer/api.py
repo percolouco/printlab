@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 from pydantic import BaseModel
@@ -74,7 +74,14 @@ async def healthz():
 
 @app.get("/")
 async def index():
-    return FileResponse(STATIC_DIR / "index.html", headers={"Cache-Control": "no-cache"})
+    # {{v}} = empreinte des fichiers de traduction partagés avec PrintLab (/static/i18n*.js) pour forcer leur rechargement
+    shared = STATIC_DIR.parent.parent / "static"
+    try:
+        v = format(int(max((shared / f).stat().st_mtime for f in ("i18n.js", "i18n-en.js"))), "x")
+    except OSError:
+        v = "0"
+    html = (STATIC_DIR / "index.html").read_text().replace("{{v}}", v)
+    return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 
 
 # ---------- informations / profils ----------

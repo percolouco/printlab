@@ -15,7 +15,8 @@ body.login{min-height:100vh;display:flex;align-items:center;justify-content:cent
 <h1><img src="/favicon.svg" alt="">PrintLab</h1><p class="sub">Filaments · Imprimante · QIDI Box</p>
 <input type="password" id="pw" placeholder="Mot de passe" autofocus autocomplete="current-password">
 <button class="btn primary">Se connecter</button><p id="err" class="err"></p></form>
+<script src="/static/i18n-en.js?v={{v}}"></script><script src="/static/i18n.js?v={{v}}"></script>
 <script>
 f.onsubmit=async e=>{e.preventDefault();err.textContent='';const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw.value})});
-if(r.ok)location='/';else{err.textContent=(await r.json()).detail||'Erreur';pw.select()}}
+if(r.ok)location='/';else{err.textContent=plT((await r.json()).detail||'Erreur');pw.select()}}
 </script></body></html>

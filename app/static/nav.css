@@ -13,3 +13,4 @@
 #nav .dd a:hover{background:var(--bg)}
 #nav [hidden]{display:none!important}
 @media(max-width:760px){#nav{padding:0 8px;overflow-x:auto;height:44px}#nav .top{height:44px;line-height:44px;padding:0 8px;font-size:13.5px}#nav .brand{font-size:18px;padding:4px 10px 4px 8px}#nav .menu .dd{display:none!important}}
+#nav .langb{font:600 11px/1 var(--f-mono);letter-spacing:.06em;border:1px solid var(--line);border-radius:4px;padding:4px 7px;margin-left:4px;cursor:pointer;background:transparent;color:var(--mut)}#nav .langb:hover{color:var(--text);border-color:var(--pri)}

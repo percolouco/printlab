@@ -2,8 +2,9 @@
 // l'envers (/slicer/api/schema?lang=en) ; le reste de l'interface est traduit ici, texte par texte, au fil des
 // changements de la page (MutationObserver). Langue mémorisée dans le navigateur (« slicer-lang »).
 const KEY = 'slicer-lang';
-export function lang() { try { return localStorage.getItem(KEY) === 'en' ? 'en' : 'fr'; } catch { return 'fr'; } }
-export function setLang(l) { try { localStorage.setItem(KEY, l); } catch { /* stockage indisponible */ } location.reload(); }
+// La langue est commune à tout PrintLab (/static/i18n.js) ; repli sur l'ancien réglage du Slicer.
+export function lang() { if (window.PL_LANG) return window.PL_LANG; try { return localStorage.getItem(KEY) === 'en' ? 'en' : 'fr'; } catch { return 'fr'; } }
+export function setLang(l) { if (window.plSetLang) return window.plSetLang(l); try { localStorage.setItem(KEY, l); } catch { /* stockage indisponible */ } location.reload(); }
 
 const EN = {
   '/ Slicer': '/ Slicer', 'Accélération': 'Acceleration', 'Aide': 'Help', 'Ajouter': 'Add', 'Ajouter des modèles (Ctrl+I)': 'Add models (Ctrl+I)',
@@ -101,6 +102,7 @@ function walk(root) {
 }
 
 export function startTranslation() {
+  if (window.PL_EN) return;  // traduction déjà assurée par le moteur commun de PrintLab (dictionnaire fusionné)
   if (lang() !== 'en') return;
   document.documentElement.lang = 'en';
   walk(document.body);

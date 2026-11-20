@@ -23,7 +23,7 @@
 <a class="top" data-menu="models" href="/#/models">Modèles 3D</a>
 <a class="top on" data-menu="slicer" href="/slicer/">Slicer</a>
 <a class="top" data-menu="workshop" href="/#/workshop">Atelier</a>
-<span class="sp"></span><a class="top" href="/#/settings">Paramètres</a>
+<span class="sp"></span><a class="top" href="/#/settings">Paramètres</a><button class="langb" type="button" data-notr onclick="plSetLang(PL_LANG==='en'?'fr':'en')">EN</button>
 </header>
 <script>try{const h=new Set(JSON.parse(localStorage.getItem("pl-hidden-menus")||"[]"));document.querySelectorAll("#nav [data-menu]").forEach(e=>{if(h.has(e.dataset.menu)&&e.dataset.menu!=="slicer")e.hidden=true})}catch(e){}</script>
 <header id="topbar">
@@ -302,6 +302,7 @@
 <div id="toasts"></div>
 <div id="busy" class="hidden"><div class="spinner"></div><div id="busy-text"></div></div>
 
+<script src="/static/i18n-en.js?v={{v}}"></script><script src="/static/i18n.js?v={{v}}"></script>
 <script type="module" src="/slicer/static/js/app.js"></script>
 </body>
 </html>

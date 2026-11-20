@@ -103,7 +103,7 @@ def _authenticated(request: Request):
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
     p = request.url.path
-    public = p in ("/login", "/api/login", "/healthz", "/favicon.svg", "/static/style.css", "/static/themes.css", "/static/favicon.svg", "/static/login.html")
+    public = p in ("/login", "/api/login", "/healthz", "/favicon.svg", "/static/style.css", "/static/themes.css", "/static/favicon.svg", "/static/login.html", "/static/i18n.js", "/static/i18n-en.js")
     if p.startswith("/api/v1/") and _lan_direct(request):
         public = True
     if not public and not _authenticated(request):
@@ -2510,7 +2510,7 @@ def invoice_del(iid: int):
 
 def _asset_version():
     """Empreinte des fichiers statiques : change à chaque mise à jour, le navigateur recharge alors app.js / style.css."""
-    return format(int(max((STATIC_DIR / f).stat().st_mtime for f in ("app.js", "style.css", "themes.css"))), "x")
+    return format(int(max((STATIC_DIR / f).stat().st_mtime for f in ("app.js", "style.css", "themes.css", "i18n.js", "i18n-en.js"))), "x")
 
 
 @app.get("/")

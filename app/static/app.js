@@ -1,7 +1,7 @@
 'use strict';
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-const fmt = (n, d = 0) => n == null || isNaN(n) ? '–' : Number(n).toLocaleString('fr-FR', {maximumFractionDigits: d, minimumFractionDigits: d});
+const fmt = (n, d = 0) => n == null || isNaN(n) ? '–' : Number(n).toLocaleString((window.PL_LOCALE || 'fr-FR'), {maximumFractionDigits: d, minimumFractionDigits: d});
 let S = {currency: 'EUR', round_prices: false, base_url: '', low_threshold: 100, extra_fields_spool: [], extra_fields_filament: [], extra_fields_vendor: []};
 const SYM = {EUR: '€', USD: '$', GBP: '£', CHF: 'CHF', CAD: 'CA$', JPY: '¥'};
 const eur = n => n == null ? '–' : fmt(S.round_prices ? Math.round(n) : n, S.round_prices ? 0 : 2) + ' ' + (SYM[S.currency] || S.currency);
@@ -19,13 +19,13 @@ const g = n => n == null ? '–' : fmt(n, 0) + ' g';
 const endAt = ts => {
   if (!ts) return '–';
   const d = new Date(ts * 1000), now = new Date();
-  const hm = d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+  const hm = d.toLocaleTimeString((window.PL_LOCALE || 'fr-FR'), {hour: '2-digit', minute: '2-digit'});
   const days = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5);
-  return days <= 0 ? hm : days === 1 ? `demain ${hm}` : `${d.toLocaleDateString('fr-FR', {weekday: 'long'})} ${hm}`;
+  return days <= 0 ? hm : days === 1 ? `demain ${hm}` : `${d.toLocaleDateString((window.PL_LOCALE || 'fr-FR'), {weekday: 'long'})} ${hm}`;
 };
 const ETA_SRC = {slicer: 'Estimation du slicer', progression: 'Extrapolée depuis la progression', 'slicer+progression': 'Moyenne : estimation du slicer et progression réelle'};
 const dur = s => { if (!s) return '–'; s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`; };
-const dt = t => t ? new Date(typeof t === 'number' ? t * 1000 : t).toLocaleString('fr-FR', {dateStyle: 'short', timeStyle: 'short'}) : '–';
+const dt = t => t ? new Date(typeof t === 'number' ? t * 1000 : t).toLocaleString((window.PL_LOCALE || 'fr-FR'), {dateStyle: 'short', timeStyle: 'short'}) : '–';
 
 async function api(path, opt = {}) {
   const o = {method: opt.method || 'GET', headers: {}};
@@ -117,8 +117,8 @@ routes.dashboard = async (el) => {
   let chart;
   if (!long) {
     const byDay = Object.fromEntries(s.per_day.map(d => [d.day, d.g]));
-    chart = Array.from({length: 30}, (_, i) => { const d = new Date(Date.now() - (29 - i) * 864e5); const k = d.toISOString().slice(0, 10); return {g: byDay[k] || 0, lbl: d.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'})}; });
-  } else chart = s.per_month.map(m => ({g: m.g, lbl: new Date(m.month + '-01').toLocaleDateString('fr-FR', {month: 'short', year: '2-digit'})}));
+    chart = Array.from({length: 30}, (_, i) => { const d = new Date(Date.now() - (29 - i) * 864e5); const k = d.toISOString().slice(0, 10); return {g: byDay[k] || 0, lbl: d.toLocaleDateString((window.PL_LOCALE || 'fr-FR'), {day: 'numeric', month: 'short'})}; });
+  } else chart = s.per_month.map(m => ({g: m.g, lbl: new Date(m.month + '-01').toLocaleDateString((window.PL_LOCALE || 'fr-FR'), {month: 'short', year: '2-digit'})}));
   const max = Math.max(...chart.map(d => d.g), 1);
   const per = (DASH_P.find(p => p[0] === dashDays) || DASH_P[0])[1].toLowerCase();
   const printing = pr.online && ['printing', 'paused'].includes(pr.state);
@@ -135,7 +135,7 @@ routes.dashboard = async (el) => {
     <div class="dlp">${printing ? `<img class="dcam" src="/api/printer/stream?snapshot=1&t=${Date.now()}" alt="" onerror="this.remove()">
       <div><div class="mut sm">${pr.state === 'paused' ? 'EN PAUSE' : 'IMPRESSION EN COURS'}</div><b class="ell" style="display:block;font-size:17px">${esc((pr.filename || '').split('/').pop().replace(/\.gcode\.3mf$|\.gcode$/, ''))}</b>
         <div class="pb" style="margin:8px 0 6px"><i style="width:${pct}%"></i></div>
-        <div class="mut">${pct} %${pr.layer && pr.layer.current_layer ? ` · couche ${pr.layer.current_layer}/${pr.layer.total_layer || '?'}` : ''}${pr.remaining_s != null ? ` · reste ${dur(pr.remaining_s)} · fin vers ${new Date(pr.eta * 1000).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}` : ''}</div>
+        <div class="mut">${pct} %${pr.layer && pr.layer.current_layer ? ` · couche ${pr.layer.current_layer}/${pr.layer.total_layer || '?'}` : ''}${pr.remaining_s != null ? ` · reste ${dur(pr.remaining_s)} · fin vers ${new Date(pr.eta * 1000).toLocaleTimeString((window.PL_LOCALE || 'fr-FR'), {hour: '2-digit', minute: '2-digit'})}` : ''}</div>
         <a class="btn sm" href="#/printer" style="margin-top:8px">Voir l'imprimante</a></div>`
       : `<div><div class="mut sm">IMPRIMANTE</div><b style="font-size:17px">${pr.online ? (pr.state === 'complete' ? 'Impression terminée' : 'Prête') : 'Injoignable'}</b>
         <div class="mut">${pr.online ? `Buse ${fmt((pr.extruder || {}).temperature, 0)} °C · plateau ${fmt((pr.bed || {}).temperature, 0)} °C` : esc(pr.error || '')}</div>
@@ -1042,7 +1042,7 @@ routes.jobs = async (el) => {
     <p class="mut" style="margin-top:-4px">Une carte par impression suivie par PrintLab : consommation par bobine, coût matière (prix payé) et électrique (compteurs Home Assistant), timelapse de l'imprimante, ta note.</p>
     <div class="jlist">${j.items.map(t => jCard(t, W)).join('') || '<p class="mut">Aucune impression suivie pour l\'instant.</p>'}</div>
     ${j.total > j.items.length ? `<div style="text-align:center;margin:12px 0"><button class="btn" id="jmore">Afficher plus (${j.total - j.items.length} de plus)</button></div>` : ''}
-    ${tli ? `<div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:240px"><b>Timelapses sur l'imprimante :</b> ${tli.count} vidéos · ${fmt(tli.size / 1e9, 2)} Go${tli.oldest ? ` · le plus ancien du ${new Date(tli.oldest * 1000).toLocaleDateString('fr-FR')}` : ''}</span>
+    ${tli ? `<div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:240px"><b>Timelapses sur l'imprimante :</b> ${tli.count} vidéos · ${fmt(tli.size / 1e9, 2)} Go${tli.oldest ? ` · le plus ancien du ${new Date(tli.oldest * 1000).toLocaleDateString((window.PL_LOCALE || 'fr-FR'))}` : ''}</span>
       ${tli.write ? `<label class="ctl">Supprimer ceux de plus de <select id="tlage"><option value="30">1 mois</option><option value="90" selected>3 mois</option><option value="180">6 mois</option></select></label><button class="btn danger" id="tlclean">Supprimer</button>` : '<span class="mut">Suppression : active les actions d\'écriture (Paramètres).</span>'}</div>` : ''}`;
   const more = $('#jmore'); if (more) more.onclick = () => { jrnN += 20; route(); };
   el.onclick = async e => {
@@ -1119,7 +1119,7 @@ const flWeight = f => f.info && (f.info.weight ?? (f.info.moonraker || {}).filam
 const flFils = f => (f.info && f.info.filaments) || [];
 const FL_SORT = {modified: ['Date du fichier', f => f.modified], name: ['Nom', f => flName(f.path).toLowerCase()], time: ['Durée', f => flTime(f) || 0],
   weight: ['Poids', f => flWeight(f) || 0], prints: ['Nb d\'impressions', f => (f.hist || {}).count || 0], last: ['Dernière impression', f => (f.hist || {}).last || 0]};
-const FL_GROUP = {none: ['Aucun', () => ''], month: ['Mois', f => new Date(f.modified * 1000).toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'})],
+const FL_GROUP = {none: ['Aucun', () => ''], month: ['Mois', f => new Date(f.modified * 1000).toLocaleDateString((window.PL_LOCALE || 'fr-FR'), {month: 'long', year: 'numeric'})],
   colors: ['Nb de couleurs', f => { const n = flFils(f).length; return n ? (n > 1 ? n + ' couleurs' : '1 couleur') : 'Inconnu'; }],
   material: ['Matière', f => [...new Set(flFils(f).map(x => x.type).filter(Boolean))].join(' + ') || 'Inconnue'],
   printed: ['Déjà imprimé', f => (f.hist || {}).count ? 'Déjà imprimés' : 'Jamais imprimés'],
@@ -1477,7 +1477,7 @@ routes.settings = async (el) => {
 // ---------- factures d'achat ----------
 // Dépôt d'un PDF → lecture → récapitulatif (une ligne par article) → validation → bobines créées.
 const INV_ST = {pending: ['À valider', 'warn'], done: ['Intégrée', 'ok'], rejected: ['Rejetée', '']};
-const invDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', {dateStyle: 'medium'}) : '–';
+const invDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString((window.PL_LOCALE || 'fr-FR'), {dateStyle: 'medium'}) : '–';
 async function invUpload(file) {
   if (!file) return;
   const fd = new FormData(); fd.append('file', file);
@@ -1542,7 +1542,7 @@ async function invRecap(el, id) {
       ${inv.has_file ? `<div><a class="btn sm" href="/api/invoices/${id}/file" target="_blank" rel="noopener">Voir le PDF</a></div>` : ''}
     </div>
     ${inv.duplicate_of && !done ? `<p class="err">⚠ Une facture avec ce numéro a déjà été intégrée (<a href="#/invoices/${inv.duplicate_of}">voir</a>). L'intégrer à nouveau créerait des bobines en double.</p>` : ''}
-    ${!inv.format && !done ? `<p class="mut">Format de facture non reconnu automatiquement : ajoute les lignes à la main ci-dessous (ou envoie un exemple à Claude pour qu'il apprenne ce fournisseur).</p>` : ''}
+    ${!inv.format && !done ? `<p class="mut">Format de facture non reconnu automatiquement : ajoute les lignes à la main ci-dessous.</p>` : ''}
     ${done ? `<div class="card"><b>Intégrée le ${dt(inv.done_at)}</b> : ${res.spools?.length || 0} bobine(s) créée(s)${res.filaments?.length ? `, ${res.filaments.length} nouveau(x) filament(s)` : ''}.
       <div class="bar" style="margin-top:8px"><a class="btn sm" href="#/spools">Voir les bobines</a><button class="btn sm" id="iundo">Annuler l'intégration</button></div></div>` : ''}
     <div class="card tw"><table class="itab"><thead><tr><th></th><th>Article</th><th class="r">Qté</th><th class="r">Prix payé / bobine</th><th class="r">Poids</th><th>Dans PrintLab</th></tr></thead><tbody>

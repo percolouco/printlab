@@ -6,13 +6,15 @@
 
 Auto-hébergé · Docker · Klipper / Moonraker · pensé pour la **QIDI X-Max 4** et la **QIDI Box**
 
+🇫🇷 Français · [🇬🇧 English](README.en.md)
+
 [Fonctionnalités](#-fonctionnalités) · [Installation](#-installation) · [Configuration](#%EF%B8%8F-configuration) · [Mise à jour](#-mise-à-jour) · [FAQ](#-faq) · [Licence](#-licence)
 
 </div>
 
-> **English summary** — PrintLab is a self-hosted web app (Docker) to manage filament spools, monitor and drive a Klipper/Moonraker
-> 3D printer, manage the QIDI Box (4 slots, RFID, drying) and slice with a built-in web front-end for OrcaSlicer.
-> The interface is in French for now. Licensed under AGPL-3.0.
+> **English** — PrintLab is a self-hosted web app (Docker) to manage filament spools, monitor and drive a Klipper/Moonraker
+> 3D printer, manage the QIDI Box and slice with a built-in web front-end for OrcaSlicer. The interface is available in
+> English and French. 👉 [Read the English README](README.en.md).
 
 <p align="center"><img src="docs/screenshots/dashboard.png" alt="Tableau de bord de PrintLab" width="900"></p>
 
@@ -53,6 +55,8 @@ PrintLab réunit tout ça dans **une seule interface web**, utilisable aussi bie
 
 Par défaut, PrintLab **ne fait que lire** l'état de l'imprimante. Les actions d'écriture (pause, lancement, suppression de
 fichiers…) sont désactivées tant que tu ne les actives pas toi-même.
+
+L'interface existe en **français et en anglais** (bouton EN / FR dans la barre du haut ; par défaut, la langue du navigateur).
 
 ---
 
@@ -118,7 +122,7 @@ fichiers…) sont désactivées tant que tu ne les actives pas toi-même.
 - **Alertes** (fin d'impression, fin de bobine, stock bas…) vers Home Assistant (notification mobile, Discord, etc.).
 - **API compatible Spoolman** : Moonraker peut utiliser PrintLab à la place de Spoolman.
 - **Import Spoolman** pour reprendre une base existante.
-- 10 thèmes (clair, sombre, contraste élevé…), interface adaptée au téléphone.
+- 10 thèmes (clair, sombre, contraste élevé…), interface adaptée au téléphone, en français ou en anglais.
 
 ---
 
@@ -202,7 +206,7 @@ Exemple d'étiquettes Traefik :
 ### Page Paramètres
 Tout le reste se règle dans l'interface : adresse de l'imprimante, actions d'écriture, seuil de stock bas, devise, thèmes,
 marques et matières affichées, alertes Home Assistant (services de notification, entités de coût et d'énergie),
-encodeur RFID, déduction automatique de la consommation, etc.
+encodeur RFID, déduction automatique de la consommation, etc. La langue se change avec le bouton **EN / FR** de la barre du haut.
 
 ---
 
@@ -263,7 +267,7 @@ Restauration : remets le dossier `data/` et le `.env`, puis `docker compose up -
 docker compose pull && docker compose up -d
 ```
 
-- Chaque version publiée a son **tag** (`ghcr.io/percolouco/printlab:1.0.0`). Pour ne rien subir, fixe une version dans
+- Chaque version publiée a son **tag** (`ghcr.io/percolouco/printlab:1.1.0`). Pour ne rien subir, fixe une version dans
   `docker-compose.yml` et change-la quand tu le décides.
 - La base est migrée automatiquement au démarrage. **Fais une sauvegarde avant** une mise à jour majeure.
 - Évite de mettre à jour **pendant une impression** : le suivi reprend après le redémarrage, mais autant être prudent.
@@ -285,6 +289,8 @@ Le script `scripts/update-orca.sh` automatise la montée de version d'Orca avec 
 
 ### Développement
 - Back-end : **FastAPI** + **SQLite** (`app/`), front-end : **JavaScript sans framework** (`app/static/`), Slicer : `app/slicer/` (three.js).
+- Traductions : l'interface est écrite en français ; `app/static/i18n-en.js` contient le dictionnaire français → anglais
+  (`{}` = valeur insérée) et `app/static/i18n.js` l'applique à la volée.
 - Lancer les tests : `python3 tools/test_eta.py`, `tools/test_flush.py`, `tools/test_project3mf.py`, `tools/test_tools3d.py`
   (les trois derniers dans le conteneur, qui contient OrcaSlicer et les dépendances 3D).
 
@@ -340,7 +346,8 @@ Non. La découpe tourne sur le processeur du serveur ; l'affichage 3D tourne dan
 Tout ce qui passe par Klipper/Moonraker fonctionne. Les pages et fonctions spécifiques à la QIDI Box ne te serviront pas.
 
 **L'interface existe-t-elle en anglais ?**
-Pas encore pour l'application (le Slicer a déjà une version anglaise). Les contributions de traduction sont bienvenues.
+Oui, depuis la version 1.1 : bouton **EN** dans la barre du haut (l'anglais est choisi automatiquement si ton navigateur n'est pas en français).
+Un mot oublié ou une traduction maladroite ? Ouvre une issue ou une pull request sur `app/static/i18n-en.js`.
 
 ---
 

@@ -3,6 +3,14 @@
 Toutes les évolutions notables de PrintLab. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.1.0] — 2026-11-20
+
+### Ajouté
+- **Interface en anglais** : bouton EN / FR dans la barre du haut, pour toute l'application, Slicer compris
+  (langue du navigateur par défaut). Pages, fenêtres, confirmations, messages d'erreur du serveur et contenus de l'Atelier.
+- Dates et nombres affichés au format de la langue choisie.
+- README en anglais ([README.en.md](README.en.md)).
+
 ## [1.0.0] — 2026-11-19
 
 Première version publique.

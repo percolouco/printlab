@@ -1390,7 +1390,7 @@ async function textureModal() {
       plate.remove(o);
       const n = await plate.addObject({ model_id: r.model_id, index: r.index, name: o.name, extruder: o.extruder, settings: { ...o.settings }, matrix: m, parts, layer_profile: o.layer_profile, brim_points: o.brim_points });
       n.plate = pl; plate.select(n); renderObjectList(); saveLocal();
-      toast(`Texture appliquée : ${r.before.toLocaleString('fr-FR')} → ${r.triangles.toLocaleString('fr-FR')} triangles (Ctrl+Z pour annuler)`);
+      toast(`Texture appliquée : ${r.before.toLocaleString((window.PL_LOCALE || 'fr-FR'))} → ${r.triangles.toLocaleString((window.PL_LOCALE || 'fr-FR'))} triangles (Ctrl+Z pour annuler)`);
     } catch (e) { toast(e.message, 'err', 7000); }
     busy(false);
   };
@@ -1479,14 +1479,14 @@ async function simplifyModal() {
   const tri = o.mesh.geometry.attributes.position.count / 3;
   const LEVELS = [['Très élevé', 0.1], ['Élevé', 0.25], ['Moyen', 0.5], ['Bas', 0.75], ['Très bas', 0.9]];
   const wrap = document.createElement('div');
-  wrap.innerHTML = `<p class="muted small">« ${esc(o.name)} » : ${tri.toLocaleString('fr-FR')} triangles. Réduit le nombre de triangles en gardant la forme, comme Simplifier d'Orca (contraction d'arêtes quadrique). La peinture de l'objet est effacée.</p>
+  wrap.innerHTML = `<p class="muted small">« ${esc(o.name)} » : ${tri.toLocaleString((window.PL_LOCALE || 'fr-FR'))} triangles. Réduit le nombre de triangles en gardant la forme, comme Simplifier d'Orca (contraction d'arêtes quadrique). La peinture de l'objet est effacée.</p>
     <label class="row gap"><input type="radio" name="sm" value="level" checked> Niveau de détail <select id="sm-level">${LEVELS.map(([l], i) => `<option value="${i}" ${i === 2 ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     <label class="row gap" style="margin-top:6px"><input type="radio" name="sm" value="ratio"> Taux de réduction <input type="number" id="sm-ratio" min="1" max="99" value="50" style="width:70px"> %</label>
     <p class="small" id="sm-est"></p>
     <div class="row gap" style="justify-content:flex-end"><button class="btn primary" id="sm-go">Simplifier</button></div>`;
   const md = modal('Simplifier', wrap);
   const ratio = () => wrap.querySelector('[name=sm]:checked').value === 'level' ? LEVELS[+wrap.querySelector('#sm-level').value][1] : Math.min(99, Math.max(1, +wrap.querySelector('#sm-ratio').value || 50)) / 100;
-  const est = () => { wrap.querySelector('#sm-est').textContent = `≈ ${Math.round(tri * (1 - ratio())).toLocaleString('fr-FR')} triangles après simplification`; };
+  const est = () => { wrap.querySelector('#sm-est').textContent = `≈ ${Math.round(tri * (1 - ratio())).toLocaleString((window.PL_LOCALE || 'fr-FR'))} triangles après simplification`; };
   wrap.querySelectorAll('input, select').forEach((i) => i.oninput = est); est();
   wrap.querySelector('#sm-go').onclick = async () => {
     const r0 = ratio();
@@ -1498,7 +1498,7 @@ async function simplifyModal() {
       plate.remove(o);
       const n = await plate.addObject({ model_id: r.model_id, index: r.index, name: o.name, extruder: o.extruder, settings: { ...o.settings }, matrix: m, parts, layer_profile: o.layer_profile, brim_points: o.brim_points });
       n.plate = pl; plate.select(n); renderObjectList(); saveLocal();
-      toast(`Simplifié : ${r.before.toLocaleString('fr-FR')} → ${r.triangles.toLocaleString('fr-FR')} triangles`);
+      toast(`Simplifié : ${r.before.toLocaleString((window.PL_LOCALE || 'fr-FR'))} → ${r.triangles.toLocaleString((window.PL_LOCALE || 'fr-FR'))} triangles`);
     } catch (e) { toast(e.message, 'err'); }
     busy(false);
   };
@@ -2448,7 +2448,7 @@ function renderStats() {
   $('stats').innerHTML = `<div class="panel-title">Résumé <span class="muted small">découpé en ${S.job.info?.duration ?? '?'} s</span></div>
     <table>
       <tr><td>Temps estimé</td><td colspan="2"><b>${secs ? fmtDuration(secs) : esc(st.time || '?')}</b></td></tr>
-      ${secs ? `<tr><td>Fin si lancé maintenant</td><td colspan="2">${new Date(Date.now() + secs * 1000).toLocaleString('fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}</td></tr>` : ''}
+      ${secs ? `<tr><td>Fin si lancé maintenant</td><td colspan="2">${new Date(Date.now() + secs * 1000).toLocaleString((window.PL_LOCALE || 'fr-FR'), { weekday: 'short', hour: '2-digit', minute: '2-digit' })}</td></tr>` : ''}
       <tr><td>Couches</td><td colspan="2">${S.gcodeData.layers.length} · ${esc(st.max_z || '')} mm</td></tr>
       <tr><td>Filament total</td><td colspan="2">${esc(st.total_g || '?')} g${st.total_cost && +st.total_cost > 0 ? ` · ${(+st.total_cost).toFixed(2)} €` : ''}</td></tr>
       ${rows}
@@ -2863,7 +2863,7 @@ async function projectAction(act) {
     const list = await api('/slicer/api/projects');
     const wrap = document.createElement('div');
     wrap.className = 'list-pick';
-    wrap.innerHTML = list.map((p) => `<div class="row gap"><button class="btn" style="flex:1" data-open="${esc(p.name)}">${esc(p.name)} <span class="muted small">— ${new Date(p.modified * 1000).toLocaleString('fr-FR')}</span></button>
+    wrap.innerHTML = list.map((p) => `<div class="row gap"><button class="btn" style="flex:1" data-open="${esc(p.name)}">${esc(p.name)} <span class="muted small">— ${new Date(p.modified * 1000).toLocaleString((window.PL_LOCALE || 'fr-FR'))}</span></button>
       <button class="icon" data-del="${esc(p.name)}" title="Supprimer">${icon('trash', 15)}</button></div>`).join('') || '<p class="muted">Aucun projet enregistré.</p>';
     const md = modal('Ouvrir un projet', wrap);
     wrap.querySelectorAll('[data-open]').forEach((b) => b.onclick = async () => {

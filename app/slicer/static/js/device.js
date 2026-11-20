@@ -89,7 +89,7 @@ async function refreshFiles() {
     const files = await api('/slicer/api/printer-files');
     document.getElementById('files').innerHTML = files.slice(0, 40).map((f) => `
       <div class="file-row">${f.path.endsWith('.gcode') ? `<img loading="lazy" src="/slicer/api/printer-thumbnail?path=${encodeURIComponent((f.path.includes('/') ? f.path.replace(/[^/]+$/, '') : '') + '.thumbs/' + f.path.split('/').pop().replace(/\.gcode$/, '-300x300.png'))}" onerror="this.style.visibility='hidden'">` : '<span></span>'}
-      <div><div class="n" title="${esc(f.path)}">${esc(f.path)}</div><div class="muted small">${new Date(f.modified * 1000).toLocaleString('fr-FR')} · ${(f.size / 1e6).toFixed(1)} Mo</div></div>
+      <div><div class="n" title="${esc(f.path)}">${esc(f.path)}</div><div class="muted small">${new Date(f.modified * 1000).toLocaleString((window.PL_LOCALE || 'fr-FR'))} · ${(f.size / 1e6).toFixed(1)} Mo</div></div>
       <button class="btn small" data-start="${esc(f.path)}">▶</button></div>`).join('') || '<p class="muted">Aucun fichier</p>';
     document.querySelectorAll('[data-start]').forEach((b) => b.onclick = async () => {
       if (!await confirm2('Lancer l\'impression', `Imprimer <b>${esc(b.dataset.start)}</b> ?`, 'Imprimer')) return;
@@ -104,7 +104,7 @@ async function refreshQueue() {
     const q = await api('/slicer/api/printer-queue');
     document.getElementById('queue-state').textContent = { ready: '· prête', paused: '· en pause', loading: '· chargement', starting: '· démarrage' }[q.queue_state] || '';
     document.getElementById('queue').innerHTML = (q.queued_jobs || []).map((j) => `<div class="file-row" style="grid-template-columns:1fr auto"><div><div class="n">${esc(j.filename)}</div>
-      <div class="muted small">ajouté ${new Date(j.time_added * 1000).toLocaleString('fr-FR')}</div></div><button class="btn small" data-qdel="${esc(j.job_id)}" title="Retirer de la file">✕</button></div>`).join('')
+      <div class="muted small">ajouté ${new Date(j.time_added * 1000).toLocaleString((window.PL_LOCALE || 'fr-FR'))}</div></div><button class="btn small" data-qdel="${esc(j.job_id)}" title="Retirer de la file">✕</button></div>`).join('')
       || '<p class="muted small">Vide. Depuis l\'aperçu : « Ajouter à la file ».</p>';
     document.querySelectorAll('[data-qdel]').forEach((b) => b.onclick = async () => { await api('/slicer/api/printer-queue/' + encodeURIComponent(b.dataset.qdel), { method: 'DELETE' }); refreshQueue(); });
   } catch (e) { document.getElementById('queue').innerHTML = `<p class="muted small">${esc(e.message)}</p>`; }
@@ -115,7 +115,7 @@ async function refreshHistory() {
     const jobs = await api('/slicer/api/printer-history');
     document.getElementById('history').innerHTML = jobs.slice(0, 25).map((j) => `
       <div class="file-row" style="grid-template-columns:1fr auto"><div><div class="n">${esc(j.filename)}</div>
-      <div class="muted small">${new Date(j.start_time * 1000).toLocaleString('fr-FR')} · ${fmtDuration(j.print_duration)} · ${((j.filament_used || 0) / 1000).toFixed(2)} m</div></div>
+      <div class="muted small">${new Date(j.start_time * 1000).toLocaleString((window.PL_LOCALE || 'fr-FR'))} · ${fmtDuration(j.print_duration)} · ${((j.filament_used || 0) / 1000).toFixed(2)} m</div></div>
       <span class="small" style="color:${j.status === 'completed' ? 'var(--ok)' : j.status === 'cancelled' ? 'var(--warn)' : 'var(--err)'}">${esc({ completed: 'Terminée', cancelled: 'Annulée', error: 'Erreur', klippy_shutdown: 'Arrêt', in_progress: 'En cours' }[j.status] || j.status)}</span></div>`).join('') || '<p class="muted">Aucun historique</p>';
   } catch {}
 }
@@ -147,7 +147,7 @@ function render({ status: s, box }) {
     <span>Fichier</span><span>${esc(ps.filename || '—')}</span>
     <span>Progression</span><span>${(prog * 100).toFixed(1)} %${layer ? ` · couche ${layer}/${total || '?'}` : ''}</span>
     <span>Écoulé</span><span>${fmtDuration(elapsed)}</span>
-    <span>Restant</span><span>${eta !== null && state === 'printing' ? fmtDuration(eta) + ' (fin vers ' + new Date(Date.now() + eta * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + ')' : '—'}</span>
+    <span>Restant</span><span>${eta !== null && state === 'printing' ? fmtDuration(eta) + ' (fin vers ' + new Date(Date.now() + eta * 1000).toLocaleTimeString((window.PL_LOCALE || 'fr-FR'), { hour: '2-digit', minute: '2-digit' }) + ')' : '—'}</span>
     <span>Filament</span><span>${((ps.filament_used || 0) / 1000).toFixed(2)} m</span></div>`;
   document.getElementById('job-progress').style.width = (prog * 100) + '%';
   document.getElementById('p-pause').disabled = state !== 'printing';
