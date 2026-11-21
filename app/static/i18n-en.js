@@ -1,5 +1,8 @@
 // Dictionnaire français → anglais de PrintLab (généré ; « {} » = valeur insérée, « {-} » = valeur ignorée en anglais).
 window.PL_EN = {
+"Pour ranger : glisse un fichier ou un dossier sur un dossier, ou sur le chemin en haut (« Racine ») pour le remonter.": "To organize: drag a file or folder onto a folder, or onto the path at the top (“Root”) to move it up.",
+"« {} » existe déjà dans ce dossier": "“{}” already exists in this folder",
+"Déplacé dans « {} »": "Moved to “{}”",
 "% restant": "% left",
 "% réussies": "% successful",
 "(60 copies automatiques conservées, les manuelles sont gardées). Un fichier identique n'est stocké qu'une fois. Pour restaurer : télécharge le fichier ou le ZIP et remets-le toi-même (Fluidd → Configuration).": "(60 automatic copies kept, manual ones are never deleted). An identical file is stored only once. To restore: download the file or the ZIP and put it back yourself (Fluidd → Configuration).",

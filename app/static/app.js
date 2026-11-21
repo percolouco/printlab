@@ -1234,19 +1234,19 @@ routes.files = async (el) => {
     for (const f of items) { const k = FL_GROUP[st.group][1](f); if (!gm.has(k)) { const o = {k, items: []}; gm.set(k, o); groups.push(o); } gm.get(k).items.push(f); }
     const mats = [...new Set(all.flatMap(f => flFils(f).map(x => x.type)).filter(Boolean))].sort();
     const card = f => { const i = f.info || {}, fl = flFils(f), h = f.hist;
-      return `<div class="fcard gcard ${st.sel === f.path ? 'on' : ''}" data-p="${esc(f.path)}" tabindex="0" role="button" style="--c:${esc((fl[0] || {}).color || '#9AA0AA')}" title="${esc(flName(f.path))}">
+      return `<div class="fcard gcard ${st.sel === f.path ? 'on' : ''}" data-p="${esc(f.path)}" tabindex="0" role="button" draggable="${W && !flat && !f.printing}" style="--c:${esc((fl[0] || {}).color || '#9AA0AA')}" title="${esc(flName(f.path))}">
         <div class="gth">${i.thumb ? `<img src="${thumbUrl(f)}" alt="" loading="lazy">` : `<span class="mut sm">${f.info ? 'Pas d\'aperçu' : 'Analyse…'}</span>`}
           ${f.printing ? '<span class="tag ok gst">en cours</span>' : h && h.count ? `<span class="fcn" title="${h.count} impression(s), ${h.ok} terminée(s)">×${h.count}</span>` : ''}
           ${fl.length > 1 ? `<span class="fcs">${fl.length} couleurs</span>` : ''}</div>
         <div class="fci"><b class="fcnm">${esc(flName(f.path))}</b>
           <span class="mut ell">${[...new Set(fl.map(x => x.type).filter(Boolean))].join(' + ') || '–'}${i.layers ? ' · ' + fmt(i.layers) + ' couches' : ''}</span>
           <div class="fcw gmeta"><b>${dur(flTime(f))}</b><span class="mut">${g(flWeight(f))}</span>${dots(fl)}</div></div></div>`; };
-    const dcard = d => `<div class="fcard dcard" data-d="${esc(d)}" tabindex="0" role="button" title="${esc(d)}"><div class="gth dth"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 8.7v8.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg></div>
+    const dcard = d => `<div class="fcard dcard" data-d="${esc(d)}" tabindex="0" role="button" draggable="${W}" title="${esc(d)}"><div class="gth dth"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 8.7v8.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg></div>
         <div class="fci"><b class="fcnm">${esc(d.split('/').pop())}</b><span class="mut ell">${cnt(d)} fichier(s)</span>
         ${W ? `<div class="dact"><button class="btn sm" data-dren="${esc(d)}" title="Renommer">✎</button><button class="btn sm" data-ddel="${esc(d)}" title="Supprimer le dossier">✕</button></div>` : ''}</div></div>`;
     const pend = data.pending && data.progress ? `<span class="tag warn">analyse des fichiers : ${data.progress.done}/${data.progress.todo}</span>` : '';
     el.innerHTML = `<div class="bar"><h1 style="margin:0">Fichiers à imprimer</h1><span class="sp"></span>${pend}</div>
-      ${W ? '<p class="mut" style="margin-top:-4px">Les fichiers présents sur l\'imprimante. Clique sur un fichier pour l\'imprimer (choix des emplacements de la Box), le renommer, le déplacer ou le supprimer.</p>'
+      ${W ? '<p class="mut" style="margin-top:-4px">Les fichiers présents sur l\'imprimante. Clique sur un fichier pour l\'imprimer (choix des emplacements de la Box), le renommer, le déplacer ou le supprimer.</p><p class="mut sm" style="margin-top:-6px">Pour ranger : glisse un fichier ou un dossier sur un dossier, ou sur le chemin en haut (« Racine ») pour le remonter.</p>'
         : '<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 12px"><span style="flex:1;min-width:240px"><b>Lecture seule.</b> Pour lancer, renommer, ranger en dossiers ou supprimer des fichiers depuis PrintLab, active « Actions d\'écriture sur l\'imprimante ».</span><a class="btn primary" href="#/settings">Activer dans Paramètres</a></div>'}<span hidden></span>
       <div class="bar" style="margin:0 0 8px"><span class="crumbs">${flat ? 'Recherche dans tous les dossiers' : crumbs}</span><span class="sp"></span>${W && !flat ? '<button class="btn" id="mkd">+ Nouveau dossier</button>' : ''}</div>
       ${data.error ? `<div class="card err">Imprimante injoignable : ${esc(data.error)}</div>` : ''}
@@ -1345,6 +1345,33 @@ routes.files = async (el) => {
     el.onkeydown = e => { const c = e.target.closest('.fcard'); if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); c.click(); } };
     const mk = $('#mkd'); if (mk) mk.onclick = async () => { const n = prompt('Nom du nouveau dossier :'); if (!n || !n.trim()) return;
       if (await act(() => api('/files/mkdir', {method: 'POST', body: {path: (st.cwd ? st.cwd + '/' : '') + n.trim()}}), 'Dossier créé')) reload(); };
+    // glisser-déposer : fichier ou dossier → dossier (vignette) ou dossier parent (fil d'Ariane)
+    let drag = null;
+    const onFiles = () => location.hash.startsWith('#/files');
+    const clearDnd = () => el.querySelectorAll('.dragging,.dropon').forEach(x => x.classList.remove('dragging', 'dropon'));
+    const dropTarget = e => {
+      if (!drag || !onFiles()) return null;
+      const t = e.target.closest('[data-d],[data-cd]'); if (!t) return null;
+      const d = t.dataset.d ?? t.dataset.cd;
+      if (d === drag || d.startsWith(drag + '/') || flDir(drag) === d) return null;   // même dossier, ou dossier dans lui-même
+      return [t, d];
+    };
+    el.ondragstart = e => {
+      const c = e.target.closest && e.target.closest('[data-p],[data-d]');
+      if (!data.write || !onFiles() || !c || c.getAttribute('draggable') !== 'true') return;
+      drag = c.dataset.p ?? c.dataset.d; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', drag); c.classList.add('dragging');
+    };
+    el.ondragend = () => { drag = null; clearDnd(); };
+    el.ondragover = e => { const r = dropTarget(e); if (!r) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      el.querySelectorAll('.dropon').forEach(x => x !== r[0] && x.classList.remove('dropon')); r[0].classList.add('dropon'); };
+    el.ondragleave = e => { const t = e.target.closest && e.target.closest('.dropon'); if (t && !t.contains(e.relatedTarget)) t.classList.remove('dropon'); };
+    el.ondrop = async e => {
+      const r = dropTarget(e); if (!r) return; e.preventDefault();
+      const src = drag, dest = (r[1] ? r[1] + '/' : '') + src.split('/').pop();
+      drag = null; clearDnd();
+      if (all.some(f => f.path === dest) || (data.dirs || []).includes(dest)) return toast(`« ${dest.split('/').pop()} » existe déjà dans ce dossier`);
+      if (await act(() => api('/files/move', {method: 'POST', body: {src, dest}}), `Déplacé dans « ${r[1] || 'Racine'} »`)) { if (st.sel === src) closeDrawer(); await reload(); }
+    };
     el.onclick = async e => {
       const cd = e.target.closest('[data-cd]'); if (cd) { e.preventDefault(); st.cwd = cd.dataset.cd; closeDrawer(); return render(); }
       const dr = e.target.closest('[data-dren]'); if (dr) { const o = dr.dataset.dren, n = prompt('Nouveau nom du dossier :', o.split('/').pop()); if (!n || !n.trim() || n.trim() === o.split('/').pop()) return;
