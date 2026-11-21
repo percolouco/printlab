@@ -12,10 +12,6 @@ Auto-hébergé · Docker · Klipper / Moonraker · pensé pour la **QIDI X-Max 4
 
 </div>
 
-> **English** — PrintLab is a self-hosted web app (Docker) to manage filament spools, monitor and drive a Klipper/Moonraker
-> 3D printer, manage the QIDI Box and slice with a built-in web front-end for OrcaSlicer. The interface is available in
-> English and French. 👉 [Read the English README](README.en.md).
-
 <p align="center"><img src="docs/screenshots/dashboard.png" alt="Tableau de bord de PrintLab" width="900"></p>
 
 ---
