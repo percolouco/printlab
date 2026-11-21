@@ -3,11 +3,13 @@
 Toutes les évolutions notables de PrintLab. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
-## [Non publié]
+## [1.3.0] — 2026-11-21
 
 ### Ajouté
 - **Appli installable (PWA)** : icône sur l'écran d'accueil (iOS, Android), plein écran, barre d'onglets en bas sur téléphone,
   session prolongée à chaque utilisation.
+- Lecture des puces d'origine Bambu Lab documentée : elle repose sur le micrologiciel de Box et le module Klipper du projet
+  [Valve Oil](https://github.com/thelegendtubaguy/valve-oil) (GPL-3.0, thelegendtubaguy), non inclus dans PrintLab.
 
 ### Modifié
 - Le choix de la langue passe de la barre du haut à **Paramètres → Apparence → Langue**.
@@ -20,7 +22,7 @@ versions selon [SemVer](https://semver.org/lang/fr/).
 - **Séchage au lancement d'une impression** : dans la fenêtre « Lancer l'impression », sécher la Box **avant** (l'impression
   démarre automatiquement à la fin du séchage, avec une alerte) ou **pendant** l'impression. Température et durée proposées
   selon les matières du fichier ; impression programmée visible et annulable sur la page Box.
-- **RFID Bambu Lab** : avec le micrologiciel de Box Valve Oil, les puces d'origine des bobines Bambu Lab sont lues et la bobine
+- **RFID Bambu Lab** : avec le micrologiciel de Box du projet [Valve Oil](https://github.com/thelegendtubaguy/valve-oil) (GPL-3.0, thelegendtubaguy), les puces d'origine des bobines Bambu Lab sont lues et la bobine
   correspondante du stock est associée automatiquement à l'emplacement (voir docs/RFID.md).
 - **Fichiers à imprimer** : glisser-déposer vers un dossier, fenêtre « Déplacer » avec arborescence, vignette de dossier en
   mosaïque, actions au survol (sélection, imprimer, renommer, supprimer) et actions groupées.

@@ -278,7 +278,7 @@ Restore: put back the `data/` folder and `.env`, then `docker compose up -d`.
 docker compose pull && docker compose up -d
 ```
 
-- Each release has its own **tag** (`ghcr.io/percolouco/printlab:1.2.0`). To stay in control, pin a version in
+- Each release has its own **tag** (`ghcr.io/percolouco/printlab:1.3.0`). To stay in control, pin a version in
   `docker-compose.yml` and change it when you decide.
 - The database is migrated automatically on start-up. **Back up first** before a major update.
 - Avoid updating **during a print**: tracking resumes after the restart, but better safe than sorry.
