@@ -1110,7 +1110,7 @@ const putSetting = async (k, v) => { S = await api('/settings', {method: 'PUT', 
 // morceaux, rien n'est envoyé à l'imprimante), de l'historique Moonraker et du stock PrintLab (bobines correspondantes).
 const FL_KEY = 'printlab.files';
 const filesState = Object.assign({q: '', sort: 'modified', dir: -1, group: 'none', mat: '', sel: null, cwd: ''}, (() => { try { return JSON.parse(localStorage.getItem(FL_KEY)) || {}; } catch { return {}; } })());
-filesState.sel = null; filesState.cwd = '';
+filesState.sel = null; filesState.cwd = ''; filesState.pick = new Set();
 const flDir = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '';
 const flSave = () => { try { localStorage.setItem(FL_KEY, JSON.stringify({sort: filesState.sort, dir: filesState.dir, group: filesState.group})); } catch {} };
 const flName = p => p.split('/').pop().replace(/\.gcode\.3mf$|\.3mf$|\.gcode$/i, '');
@@ -1245,7 +1245,19 @@ function pickFolder(dirs, cur, name, mkdir) {
   });
 }
 
+// calque au survol d'une vignette (façon Plex) : sélection en haut à gauche, imprimer au centre, renommer en bas à gauche, supprimer en bas à droite
+const SVGI = {
+  check: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  play: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>'};
+const flCov = (p, dir, busy) => `<div class="cov"><button type="button" class="cbtn cpk" data-pk="${esc(p)}" title="Sélectionner" aria-label="Sélectionner">${SVGI.check}</button>
+  ${!dir && !busy ? `<button type="button" class="cbtn cpl" data-pl="${esc(p)}" title="Imprimer" aria-label="Imprimer">${SVGI.play}</button>` : ''}
+  <button type="button" class="cbtn ced" ${dir ? 'data-dren' : 'data-ed'}="${esc(p)}" title="Renommer" aria-label="Renommer">${SVGI.edit}</button>
+  ${busy ? '' : `<button type="button" class="cbtn cdl" ${dir ? 'data-ddel' : 'data-dl'}="${esc(p)}" title="Supprimer" aria-label="Supprimer">${SVGI.trash}</button>`}</div>`;
+
 routes.files = async (el) => {
+  filesState.pick = new Set(); el.classList.remove('picking');
   const st = filesState;
   let data = await api('/files'), all = data.files;
   const render = () => {
@@ -1266,10 +1278,10 @@ routes.files = async (el) => {
     for (const f of items) { const k = FL_GROUP[st.group][1](f); if (!gm.has(k)) { const o = {k, items: []}; gm.set(k, o); groups.push(o); } gm.get(k).items.push(f); }
     const mats = [...new Set(all.flatMap(f => flFils(f).map(x => x.type)).filter(Boolean))].sort();
     const card = f => { const i = f.info || {}, fl = flFils(f), h = f.hist;
-      return `<div class="fcard gcard ${st.sel === f.path ? 'on' : ''}" data-p="${esc(f.path)}" tabindex="0" role="button" draggable="${W && !flat && !f.printing}" style="--c:${esc((fl[0] || {}).color || '#9AA0AA')}" title="${esc(flName(f.path))}">
+      return `<div class="fcard gcard ${st.sel === f.path ? 'on' : ''} ${st.pick.has(f.path) ? 'picked' : ''}" data-p="${esc(f.path)}" tabindex="0" role="button" draggable="${W && !flat && !f.printing}" style="--c:${esc((fl[0] || {}).color || '#9AA0AA')}" title="${esc(flName(f.path))}">
         <div class="gth">${i.thumb ? `<img src="${thumbUrl(f)}" alt="" loading="lazy">` : `<span class="mut sm">${f.info ? 'Pas d\'aperçu' : 'Analyse…'}</span>`}
           ${f.printing ? '<span class="tag ok gst">en cours</span>' : h && h.count ? `<span class="fcn" title="${h.count} impression(s), ${h.ok} terminée(s)">×${h.count}</span>` : ''}
-          ${fl.length > 1 ? `<span class="fcs">${fl.length} couleurs</span>` : ''}</div>
+          ${fl.length > 1 ? `<span class="fcs">${fl.length} couleurs</span>` : ''}${W && !flat ? flCov(f.path, false, f.printing) : ''}</div>
         <div class="fci"><b class="fcnm" data-notr>${esc(flName(f.path))}</b>
           <span class="mut ell">${[...new Set(fl.map(x => x.type).filter(Boolean))].join(' + ') || '–'}${i.layers ? ' · ' + fmt(i.layers) + ' couches' : ''}</span>
           <div class="fcw gmeta"><b>${dur(flTime(f))}</b><span class="mut">${g(flWeight(f))}</span>${dots(fl)}</div></div></div>`; };
@@ -1280,9 +1292,8 @@ routes.files = async (el) => {
       if (!t.length) return ico;
       return `<div class="dmos n${t.length}">${t.map(f => `<img src="${thumbUrl(f)}" alt="" loading="lazy">`).join('')}</div><span class="dbadge">${ico.replace(/56/g, '16')}</span>`;
     };
-    const dcard = d => `<div class="fcard dcard" data-d="${esc(d)}" tabindex="0" role="button" draggable="${W}" title="${esc(d)}"><div class="gth dth">${dthumbs(d)}</div>
-        <div class="fci"><b class="fcnm" data-notr>${esc(d.split('/').pop())}</b><span class="mut ell">${cnt(d)} fichier(s)</span>
-        ${W ? `<div class="dact"><button class="btn sm" data-dren="${esc(d)}" title="Renommer">✎</button><button class="btn sm" data-ddel="${esc(d)}" title="Supprimer le dossier">✕</button></div>` : ''}</div></div>`;
+    const dcard = d => `<div class="fcard dcard ${st.pick.has(d) ? 'picked' : ''}" data-d="${esc(d)}" tabindex="0" role="button" draggable="${W}" title="${esc(d)}"><div class="gth dth">${dthumbs(d)}${W ? flCov(d, true, all.some(f => f.printing && f.path.startsWith(d + '/'))) : ''}</div>
+        <div class="fci"><b class="fcnm" data-notr>${esc(d.split('/').pop())}</b><span class="mut ell">${cnt(d)} fichier(s)</span></div></div>`;
     const pend = data.pending && data.progress ? `<span class="tag warn">analyse des fichiers : ${data.progress.done}/${data.progress.todo}</span>` : '';
     el.innerHTML = `<div class="bar"><h1 style="margin:0">Fichiers à imprimer</h1><span class="sp"></span>${pend}</div>
       ${W ? '<p class="mut" style="margin-top:-4px">Les fichiers présents sur l\'imprimante. Clique sur un fichier pour l\'imprimer (choix des emplacements de la Box), le renommer, le déplacer ou le supprimer.</p><p class="mut sm" style="margin-top:-6px">Pour ranger : glisse un fichier ou un dossier sur un dossier, ou sur le chemin en haut (« Racine ») pour le remonter.</p>'
@@ -1296,7 +1307,10 @@ routes.files = async (el) => {
       ${subs.length ? `<div class="fgrid" style="margin-bottom:12px">${subs.map(dcard).join('')}</div>` : ''}
       ${groups.map(g0 => `${st.group !== 'none' ? `<div class="fsec"><h3>${esc(String(g0.k))}</h3><span class="mut">${g0.items.length} fichier${g0.items.length > 1 ? 's' : ''} · ${dur(g0.items.reduce((a, f) => a + (flTime(f) || 0), 0))}</span></div>` : ''}
         <div class="fgrid">${g0.items.map(card).join('')}</div>`).join('') || (subs.length ? '' : '<p class="mut">Aucun fichier.</p>')}
-      <p class="mut" style="margin-top:14px">${items.length} fichier(s) · ${sizeH(items.reduce((a, f) => a + f.size, 0))}</p>`;
+      <p class="mut" style="margin-top:14px">${items.length} fichier(s) · ${sizeH(items.reduce((a, f) => a + f.size, 0))}</p>
+      ${st.pick.size ? `<div class="selbar" role="toolbar"><b>${st.pick.size} sélectionné(s)</b><button class="btn sm" data-sa>Tout sélectionner</button><span class="sp"></span>
+        <button class="btn sm" data-smv>Déplacer…</button><button class="btn sm danger" data-sdl>Supprimer</button><button class="btn sm" data-sx title="Annuler la sélection (Échap)">✕</button></div>` : ''}`;
+    el.classList.toggle('picking', st.pick.size > 0);
     wire(); if (st.sel) drawer();
   };
   const drawer = async () => {
@@ -1366,7 +1380,7 @@ routes.files = async (el) => {
       const ext = (f.path.match(/\.gcode\.3mf$|\.3mf$|\.gcode$/i) || [''])[0], n = prompt('Nouveau nom :', flName(f.path));
       if (!n || !n.trim() || n.trim() === flName(f.path)) return;
       const dest = (flDir(f.path) ? flDir(f.path) + '/' : '') + n.trim().replace(/[\/]/g, '_') + ext;
-      if (await act(() => api('/files/move', {method: 'POST', body: {src: f.path, dest}}), 'Renommé')) { st.sel = dest; await reload(); }
+      if (await act(() => api('/files/move', {method: 'POST', body: {src: f.path, dest}}), 'Renommé')) { if (st.sel === f.path) st.sel = dest; await reload(); }
     } else if (a === 'move') {
       const cur = flDir(f.path), d = await pickFolder(data.dirs || [], cur, flName(f.path), async n => { await api('/files/mkdir', {method: 'POST', body: {path: n}}); data.dirs = [...(data.dirs || []), n]; });
       if (d == null || d === cur) return;
@@ -1375,12 +1389,36 @@ routes.files = async (el) => {
       if (await act(() => api('/files/move', {method: 'POST', body: {src: f.path, dest}}), 'Déplacé')) { closeDrawer(); await reload(); }
     }
   };
+  const mkdirFn = async n => { await api('/files/mkdir', {method: 'POST', body: {path: n}}); data.dirs = [...(data.dirs || []), n]; };
+  const visible = () => [...el.querySelectorAll('[data-p],[data-d]')].map(x => x.dataset.p ?? x.dataset.d);
+  const moveMany = async (srcs, d) => {
+    let n = 0, skip = 0;
+    for (const src of srcs) {
+      const dest = (d ? d + '/' : '') + src.split('/').pop();
+      if (flDir(src) === d || d === src || d.startsWith(src + '/') || all.some(f => f.path === dest) || (data.dirs || []).includes(dest)) { skip++; continue; }
+      try { await api('/files/move', {method: 'POST', body: {src, dest}}); n++; } catch (e) { toast(e.message); skip++; }
+    }
+    toast(`${n} élément(s) déplacé(s)` + (skip ? ` · ${skip} ignoré(s) (déjà là ou nom existant)` : ''));
+    st.pick.clear(); if (srcs.includes(st.sel)) closeDrawer(); await reload();
+  };
+  const bulk = async a => {
+    const sel = [...st.pick], dirs = sel.filter(p => (data.dirs || []).includes(p)), files = sel.filter(p => !dirs.includes(p));
+    if (a === 'move') { const d = await pickFolder(data.dirs || [], st.cwd, `${sel.length} élément(s)`, mkdirFn); if (d != null) await moveMany(sel, d); return; }
+    if (files.some(p => (all.find(f => f.path === p) || {}).printing) || dirs.some(d => all.some(f => f.printing && f.path.startsWith(d + '/')))) return toast('Un fichier sélectionné est en cours d\'impression');
+    const inside = all.filter(f => dirs.some(d => f.path.startsWith(d + '/'))).length;
+    if (!confirm(`Supprimer définitivement ${files.length} fichier(s)` + (dirs.length ? ` et ${dirs.length} dossier(s) (${inside} fichier(s) dedans)` : '') + ` de l'imprimante ?\nCette action est irréversible.`)) return;
+    let n = 0;
+    for (const p of files) { try { await api('/files/delete', {method: 'POST', body: {path: p}}); n++; } catch (e) { toast(e.message); } }
+    for (const p of dirs) { try { await api('/files/delete', {method: 'POST', body: {path: p, dir: true}}); n++; } catch (e) { toast(e.message); } }
+    toast(`${n} élément(s) supprimé(s)`); st.pick.clear(); if (sel.includes(st.sel)) closeDrawer(); await reload();
+  };
   const wire = () => {
     $('#q').oninput = e => { st.q = e.target.value; clearTimeout(window._qt); window._qt = setTimeout(() => { render(); const q = $('#q'); q.focus(); q.setSelectionRange(99, 99); }, 200); };
     $('#mat').onchange = e => { st.mat = e.target.value; render(); };
     $('#srt').onchange = e => { st.sort = e.target.value; flSave(); render(); };
     $('#dir').onclick = () => { st.dir = -st.dir; flSave(); render(); };
     el.querySelectorAll('[data-grp]').forEach(b => b.onclick = () => { st.group = b.dataset.grp; flSave(); render(); });
+    document.onkeydown = e => { if (e.key === 'Escape' && st.pick.size && location.hash.startsWith('#/files') && $('#modal').hidden) { st.pick.clear(); render(); } };
     el.onkeydown = e => { const c = e.target.closest('.fcard'); if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); c.click(); } };
     const mk = $('#mkd'); if (mk) mk.onclick = async () => { const n = prompt('Nom du nouveau dossier :'); if (!n || !n.trim()) return;
       if (await act(() => api('/files/mkdir', {method: 'POST', body: {path: (st.cwd ? st.cwd + '/' : '') + n.trim()}}), 'Dossier créé')) reload(); };
@@ -1408,10 +1446,20 @@ routes.files = async (el) => {
       const r = dropTarget(e); if (!r) return; e.preventDefault();
       const src = drag, dest = (r[1] ? r[1] + '/' : '') + src.split('/').pop();
       drag = null; clearDnd();
+      if (st.pick.has(src) && st.pick.size > 1) return moveMany([...st.pick], r[1]);
       if (all.some(f => f.path === dest) || (data.dirs || []).includes(dest)) return toast(`« ${dest.split('/').pop()} » existe déjà dans ce dossier`);
       if (await act(() => api('/files/move', {method: 'POST', body: {src, dest}}), `Déplacé dans « ${r[1] || 'Racine'} »`)) { if (st.sel === src) closeDrawer(); await reload(); }
     };
     el.onclick = async e => {
+      const sb = e.target.closest('.selbar button');
+      if (sb) { if ('sx' in sb.dataset) { st.pick.clear(); return render(); } if ('sa' in sb.dataset) { visible().forEach(p => st.pick.add(p)); return render(); }
+        return bulk('smv' in sb.dataset ? 'move' : 'del'); }
+      const pick = p => { st.pick.has(p) ? st.pick.delete(p) : st.pick.add(p); render(); };
+      const pk = e.target.closest('[data-pk]'); if (pk) return pick(pk.dataset.pk);
+      if (st.pick.size && !e.target.closest('[data-cd]')) { const c = e.target.closest('[data-p],[data-d]'); if (c) return pick(c.dataset.p ?? c.dataset.d); }
+      const fb = e.target.closest('[data-pl],[data-ed],[data-dl]');
+      if (fb) { const p = fb.dataset.pl ?? fb.dataset.ed ?? fb.dataset.dl, f = all.find(x => x.path === p); if (!f) return;
+        return fileAct('pl' in fb.dataset ? 'print' : 'ed' in fb.dataset ? 'ren' : 'del', f, flFils(f), f.hist); }
       const cd = e.target.closest('[data-cd]'); if (cd) { e.preventDefault(); st.cwd = cd.dataset.cd; closeDrawer(); return render(); }
       const dr = e.target.closest('[data-dren]'); if (dr) { const o = dr.dataset.dren, n = prompt('Nouveau nom du dossier :', o.split('/').pop()); if (!n || !n.trim() || n.trim() === o.split('/').pop()) return;
         if (await act(() => api('/files/move', {method: 'POST', body: {src: o, dest: (flDir(o) ? flDir(o) + '/' : '') + n.trim()}}), 'Dossier renommé')) reload(); return; }

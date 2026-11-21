@@ -1,5 +1,17 @@
 // Dictionnaire français → anglais de PrintLab (généré ; « {} » = valeur insérée, « {-} » = valeur ignorée en anglais).
 window.PL_EN = {
+"Sélectionner": "Select",
+"{} sélectionné(s)": "{} selected",
+"Tout sélectionner": "Select all",
+"Déplacer…": "Move…",
+"Annuler la sélection (Échap)": "Clear selection (Esc)",
+"{} élément(s)": "{} item(s)",
+"{} élément(s) déplacé(s)": "{} item(s) moved",
+"{} élément(s) déplacé(s) · {} ignoré(s) (déjà là ou nom existant)": "{} item(s) moved · {} skipped (already there or name exists)",
+"{} élément(s) supprimé(s)": "{} item(s) deleted",
+"Un fichier sélectionné est en cours d'impression": "A selected file is currently printing",
+"Supprimer définitivement {} fichier(s) de l'imprimante ? Cette action est irréversible.": "Permanently delete {} file(s) from the printer?\nThis cannot be undone.",
+"Supprimer définitivement {} fichier(s) et {} dossier(s) ({} fichier(s) dedans) de l'imprimante ? Cette action est irréversible.": "Permanently delete {} file(s) and {} folder(s) ({} file(s) inside) from the printer?\nThis cannot be undone.",
 "(actuel)": "(current)",
 "Déjà dans ce dossier": "Already in this folder",
 "Déplacer ici": "Move here",
