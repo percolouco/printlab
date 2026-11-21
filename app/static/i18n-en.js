@@ -1,5 +1,8 @@
 // Dictionnaire français → anglais de PrintLab (généré ; « {} » = valeur insérée, « {-} » = valeur ignorée en anglais).
 window.PL_EN = {
+"Puce d'origine Bambu Lab lue par la Box : bobine du stock associée automatiquement (même matière, couleur la plus proche)": "Original Bambu Lab chip read by the Box: matching stock spool linked automatically (same material, closest color)",
+"RFID Bambu": "Bambu RFID",
+"Puce Bambu lue ({}) : aucune bobine de ton stock ne correspond. Ajoute-la dans Filaments pour qu'elle soit suivie.": "Bambu chip read ({}): no spool in your stock matches. Add it in Filaments so it gets tracked.",
 "Sélectionner": "Select",
 "{} sélectionné(s)": "{} selected",
 "Tout sélectionner": "Select all",

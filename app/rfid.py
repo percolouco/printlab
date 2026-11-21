@@ -199,3 +199,37 @@ def pick(candidates, current, elsewhere):
     if len(free) == 1:
         return free[0], False
     return None, len(free) > 1
+
+
+# ---------- puces d'origine Bambu Lab (lues par la Box avec le micrologiciel Valve Oil) ----------
+# La Box ne transmet que la marque (« Bambu »), le nom du filament (« PLA Basic »), sa matière et la couleur de la puce :
+# on retrouve la bobine du stock PrintLab qui y correspond (marque Bambu, même matière, couleur la plus proche).
+
+def _base(t):
+    return re.sub(r"[^A-Z0-9]", "", str(t or "").upper().split(" ")[0].rstrip("+"))
+
+
+def is_bambu(fw):
+    return "bambu" in str((fw or {}).get("vendor") or "").lower()
+
+
+def bambu_candidates(fw, spools, max_dist=60):
+    """fw : infos de la Box pour l'emplacement ; spools : [{id, vendor, material, name, finish, color_hex, used, registered}].
+    Renvoie les ids des bobines possibles, de la plus probable à la moins probable."""
+    if not is_bambu(fw):
+        return []
+    c = _rgb(fw.get("color"))
+    want = _base(fw.get("type") or fw.get("filament"))
+    words = _tokens(fw.get("filament")) - {want.lower()}
+    scored = []
+    for s in spools:
+        if "bambu" not in str(s.get("vendor") or "").lower() or _base(s.get("material")) != want:
+            continue
+        sc = _rgb(s.get("color_hex"))
+        d = _dist(c, sc) if c and sc else 999
+        if d > max_dist:
+            continue
+        # « PLA Matte » sur la puce ↔ « Matte » dans le nom ou la finition de la bobine
+        name_ok = not words or bool(words & (_tokens(s.get("name")) | _tokens(s.get("finish"))))
+        scored.append((0 if name_ok else 1, round(d / 8), 0 if s.get("used") else 1, s.get("registered") or "", s["id"]))
+    return [x[-1] for x in sorted(scored)]

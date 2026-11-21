@@ -32,3 +32,9 @@ depuis la page web.
 - `app/rfid.py` : codes, suggestions (matière, couleur la plus proche, marque), signature, correspondance.
 - `app/rfid_writer.py` : pilotes (PC/SC, HTTP, simulé).
 - `app/main.py` : `/api/rfid`, `/api/rfid/suggest/{id}`, `/api/rfid/write`, `/api/rfid/read`, `/api/rfid/tags/{id}`.
+
+## Original Bambu Lab chips / puces d'origine Bambu Lab
+
+With the [Valve Oil](https://github.com/thelegendtubaguy/valve-oil) QIDI Box firmware (GPL-3), the Box can read the **original RFID chips of Bambu Lab spools**. PrintLab then links the slot to the matching spool in your stock: Bambu Lab brand, same material, closest color (same name/finish and already-opened spools first; a spool already linked to the slot is kept when it matches). Setting `rfid_bambu` (on by default). PrintLab never writes anything to the printer for this.
+
+Avec le micrologiciel Box de Valve Oil, la Box lit les puces d'origine des bobines Bambu Lab, et PrintLab associe automatiquement l'emplacement à la bobine correspondante de ton stock.

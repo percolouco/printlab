@@ -1556,22 +1556,38 @@ def rfid_autolink(b):
     Renvoie {slot: {"rfid": True, "rfid_linked": id | None, "rfid_candidates": [...]}}."""
     out = {}
     tags = rows("SELECT t.spool_id, t.sig FROM rfid_tags t JOIN spools s ON s.id=t.spool_id WHERE s.archived=0")
-    if not tags:
-        return out
+    bambu = None   # stock Bambu, chargé seulement si une puce Bambu est lue
     smap = {r["slot"]: r["spool_id"] for r in rows("SELECT slot, spool_id FROM slot_map")}
     auto = get_settings().get("rfid_autolink", True)
     changed = False
     read = {}
     for i in range(4):
         fw = _rfid_fw(b, i)
-        if fw["from_rfid"] and b.get(f"box0_box_inserted_{i}"):
+        if not b.get(f"box0_box_inserted_{i}"):
+            continue
+        if fw["from_rfid"]:
             read[i] = [t["spool_id"] for t in tags if rfid.matches(json.loads(t["sig"] or "{}"), fw)]
+        # puces Bambu (micrologiciel Valve Oil) : le firmware QIDI ne lève pas info_from_rfid pour elles,
+        # on se fie donc à ce que la Box annonce (marque Bambu + matière + couleur de la puce)
+        if not read.get(i) and rfid.is_bambu(fw) and get_settings().get("rfid_bambu", True):
+            if True:
+                if bambu is None:
+                    bambu = rows("""SELECT s.id, v.name vendor, f.material, f.name, f.finish, f.color_hex, s.used_weight > 0 used, s.registered
+                                    FROM spools s JOIN filaments f ON f.id=s.filament_id LEFT JOIN vendors v ON v.id=f.vendor_id
+                                    WHERE s.archived=0 AND COALESCE(s.initial_weight, f.weight, 1000) - s.used_weight > 0""")
+                cands = rfid.bambu_candidates(fw, bambu)
+                # puce Bambu : plusieurs bobines identiques sont interchangeables, on garde celle déjà associée,
+                # sinon la plus probable qui n'est pas dans un autre emplacement
+                others = {v for k, v in smap.items() if k != i} | {c[0] for k, c in read.items() if k != i and c}
+                keep = smap.get(i) if smap.get(i) in cands else next((c for c in cands if c not in others), None)
+                read[i] = [keep] if keep else []
+                out[i] = {"rfid_brand": "bambu", "rfid_alternatives": [c for c in cands if c != keep and c not in others][:5]}
     for i, cands in read.items():
         # une bobine ne peut être qu'à un endroit : seules les étiquettes lues ailleurs (sans ambiguïté) l'excluent,
         # une simple association manuelle ailleurs est remplacée par la lecture
         elsewhere = {c[0] for k, c in read.items() if k != i and len(c) == 1}
         sid, ambiguous = rfid.pick(cands, smap.get(i), elsewhere)
-        out[i] = {"rfid": True, "rfid_candidates": cands if ambiguous else [], "rfid_linked": sid}
+        out[i] = {**out.get(i, {}), "rfid": True, "rfid_candidates": cands if ambiguous else [], "rfid_linked": sid}
         if sid and auto and smap.get(i) != sid:
             DB.execute("DELETE FROM slot_map WHERE slot=? OR spool_id=?", (i, sid))
             DB.execute("INSERT INTO slot_map(slot,spool_id) VALUES(?,?)", (i, sid))
@@ -1590,7 +1606,7 @@ async def _rfid_loop():
     while True:
         await asyncio.sleep(20)
         try:
-            if rows("SELECT 1 FROM rfid_tags LIMIT 1"):
+            if True:   # étiquettes PrintLab ou puces d'origine Bambu : la lecture de la Box est toujours utile
                 q = await mr("/printer/objects/query", {"multi_color_controller": ""})
                 rfid_autolink((q["status"].get("multi_color_controller") or {}).get("box") or {})
         except Exception:
