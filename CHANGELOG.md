@@ -11,6 +11,8 @@ versions selon [SemVer](https://semver.org/lang/fr/).
 
 ### Modifié
 - Le choix de la langue passe de la barre du haut à **Paramètres → Apparence → Langue**.
+- README et docs/RFID.md : nouvelles fonctions décrites, guide d'installation de la lecture des puces Bambu Lab avec le micrologiciel
+  de Box de Valve Oil, crédits Valve Oil.
 
 ## [1.2.0] — 2026-11-21
 

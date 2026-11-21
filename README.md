@@ -89,7 +89,11 @@ L'interface existe en **français et en anglais** (choix dans **Paramètres → 
 - **Vue en direct** de l'imprimante dessinée : températures de la buse, du plateau, du caisson, ventilateurs animés selon leur vitesse.
 - **Caméra** relayée par PrintLab (visible en HTTPS et hors de chez toi), bouton d'éclairage.
 - **Temps restant et heure de fin** fiables (estimation du slicer + progression réelle).
-- **Fichiers à imprimer** : vignettes, plateaux, filaments et durée lus dans les `.gcode.3mf`, dossiers, doublons.
+- **Fichiers à imprimer** : vignettes, plateaux, filaments et durée lus dans les `.gcode.3mf`, dossiers (aperçu en mosaïque), doublons.
+  Rangement par **glisser-déposer**, fenêtre « Déplacer » avec arborescence, actions au survol (sélectionner, imprimer, renommer,
+  supprimer) et **sélection multiple**.
+- **Séchage au lancement** : au moment d'imprimer, sécher la Box **avant** (l'impression démarre toute seule à la fin du séchage)
+  ou **pendant** l'impression, avec température et durée proposées selon les matières du fichier.
 - **Journal des impressions** : coût matière, **coût électrique** (via Home Assistant), notes, relance, timelapses.
 - **Sauvegardes** des fichiers de configuration de l'imprimante.
 - Actions d'écriture **désactivées par défaut** : pause, reprise, annulation, lancement, gestion des fichiers, avec garde-fous côté serveur
@@ -105,6 +109,9 @@ L'interface existe en **français et en anglais** (choix dans **Paramètres → 
 - **Séchage** de la Box (température, durée, arrêt automatique selon l'humidité), humidité et température en direct.
 - **Étiquettes RFID** (MIFARE Classic, format BoxRFID) : écriture depuis le téléphone via un lecteur USB ou un module ESP32 + PN532,
   association automatique quand la Box lit l'étiquette. Voir [docs/RFID.md](docs/RFID.md).
+- **Puces d'origine Bambu Lab** : avec le **micrologiciel de Box de [Valve Oil](https://github.com/thelegendtubaguy/valve-oil)**
+  (projet tiers, à installer séparément), la Box lit les puces RFID d'origine des bobines Bambu Lab et PrintLab associe
+  automatiquement l'emplacement à la bonne bobine de ton stock. Installation et retour arrière : [docs/RFID.md](docs/RFID.md#puces-dorigine-bambu-lab-micrologiciel-box-de-valve-oil--original-bambu-lab-chips).
 
 ### ✂️ Slicer (OrcaSlicer dans le navigateur)
 - Le **moteur est le vrai OrcaSlicer** (en ligne de commande, dans le conteneur) : même G-code qu'Orca pour le même projet.
@@ -122,7 +129,13 @@ L'interface existe en **français et en anglais** (choix dans **Paramètres → 
 - **Alertes** (fin d'impression, fin de bobine, stock bas…) vers Home Assistant (notification mobile, Discord, etc.).
 - **API compatible Spoolman** : Moonraker peut utiliser PrintLab à la place de Spoolman.
 - **Import Spoolman** pour reprendre une base existante.
-- 10 thèmes (clair, sombre, contraste élevé…), interface adaptée au téléphone, en français ou en anglais.
+- 10 thèmes (clair, sombre, contraste élevé…), en français ou en anglais (**Paramètres → Apparence**).
+
+### 📱 Sur téléphone
+- **Appli installable** (PWA) : sur iPhone, Safari → Partager → « Sur l'écran d'accueil » ; sur Android, Chrome propose « Installer
+  l'appli ». Pas de store : icône, plein écran, **barre d'onglets en bas** (Accueil, Imprimante, Fichiers, Box, Plus).
+- La session est prolongée à chaque utilisation : pas de mot de passe à retaper. Il faut que PrintLab soit servi en **HTTPS**
+  (voir [Derrière un reverse proxy](#derrière-un-reverse-proxy-https)).
 
 ---
 
@@ -131,6 +144,7 @@ L'interface existe en **français et en anglais** (choix dans **Paramètres → 
 | Matériel / logiciel | État |
 |---|---|
 | **QIDI X-Max 4 + QIDI Box** (firmware 01.01.07.01) | Testé au quotidien |
+| QIDI Box + **micrologiciel Box Valve Oil** | Lecture des puces d'origine Bambu Lab (testé avec Valve Oil 26.11.18.2) |
 | Autre imprimante **Klipper + Moonraker** | Gestion des bobines, suivi, fichiers, caméra et Slicer fonctionnent ; les fonctions Box sont propres à la QIDI Box |
 | Sans imprimante | PrintLab fonctionne comme simple gestionnaire de bobines et de factures |
 | Serveur | Linux avec Docker, architecture **x86-64** (OrcaSlicer n'est publié que pour x86-64 sous Linux) |
@@ -370,6 +384,8 @@ En contribuant, tu acceptes que ta contribution soit publiée sous la licence AG
 - [three.js](https://threejs.org) et [three-mesh-bvh](https://github.com/gkjohnson/three-mesh-bvh) (MIT) : 3D dans le navigateur.
 - [manifold3d](https://github.com/elalish/manifold), [trimesh](https://github.com/mikedh/trimesh), [FastAPI](https://fastapi.tiangolo.com) et les autres dépendances listées dans `requirements.txt`.
 - Format des étiquettes RFID repris de BoxRFID (TinkerBarn).
+- [Valve Oil](https://github.com/thelegendtubaguy/valve-oil) (GPL-3.0, thelegendtubaguy) : micrologiciel de la QIDI Box et module Klipper
+  qui permettent de lire les puces d'origine Bambu Lab. Non inclus dans PrintLab ; PrintLab utilise ce que la Box annonce.
 - Klipper, Moonraker, Fluidd et la communauté QIDI X-Max 4.
 
 PrintLab est un projet indépendant, **non affilié à QIDI Technology**. QIDI, X-Max 4 et QIDI Box sont des marques de leurs propriétaires,

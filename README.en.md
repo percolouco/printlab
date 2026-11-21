@@ -87,7 +87,10 @@ The interface is available in **English and French** (**Settings → Appearance 
 - **Live drawn view** of the printer: nozzle, bed and chamber temperatures, fans animated according to their speed.
 - **Camera** relayed by PrintLab (works over HTTPS and away from home), light button.
 - Reliable **time left and end time** (slicer estimate + actual progress).
-- **Files to print**: thumbnails, plates, filaments and duration read from `.gcode.3mf` files, folders, duplicates.
+- **Files to print**: thumbnails, plates, filaments and duration read from `.gcode.3mf` files, folders (mosaic preview), duplicates.
+  **Drag and drop** to organize, "Move" window with a folder tree, hover actions (select, print, rename, delete) and **multi-select**.
+- **Drying at print start**: when starting a print, dry the Box **before** (the print starts by itself when drying ends) or
+  **during** the print, with temperature and duration suggested from the file's materials.
 - **Print log**: material cost, **electricity cost** (through Home Assistant), ratings, reprint, timelapses.
 - **Backups** of the printer's configuration files.
 - Write actions **disabled by default**: pause, resume, cancel, start, file management, with server-side safeguards
@@ -103,6 +106,9 @@ The interface is available in **English and French** (**Settings → Appearance 
 - Box **drying** (temperature, duration, automatic stop based on humidity), live humidity and temperature.
 - **RFID tags** (MIFARE Classic, BoxRFID format): write them from your phone through a USB reader or an ESP32 + PN532 module,
   automatic assignment when the Box reads the tag. See [docs/RFID.md](docs/RFID.md) (French).
+- **Original Bambu Lab chips**: with the **QIDI Box firmware from [Valve Oil](https://github.com/thelegendtubaguy/valve-oil)**
+  (third-party project, installed separately), the Box reads the original RFID chips of Bambu Lab spools and PrintLab automatically
+  links the slot to the right spool of your stock. Install and rollback: [docs/RFID.md](docs/RFID.md#puces-dorigine-bambu-lab-micrologiciel-box-de-valve-oil--original-bambu-lab-chips).
 
 ### ✂️ Slicer (OrcaSlicer in the browser)
 - The **engine is the real OrcaSlicer** (command line, inside the container): same G-code as Orca for the same project.
@@ -120,7 +126,13 @@ The interface is available in **English and French** (**Settings → Appearance 
 - **Alerts** (print finished, end of spool, low stock…) to Home Assistant (mobile notification, Discord, etc.).
 - **Spoolman-compatible API**: Moonraker can use PrintLab instead of Spoolman.
 - **Spoolman import** to bring over an existing database.
-- 10 themes (light, dark, high contrast…), phone-friendly interface, English / French.
+- 10 themes (light, dark, high contrast…), English / French (**Settings → Appearance**).
+
+### 📱 On your phone
+- **Installable app** (PWA): on iPhone, Safari → Share → "Add to Home Screen"; on Android, Chrome offers "Install app". No store:
+  icon, full screen, **bottom tab bar** (Home, Printer, Files, Box, More).
+- The session is extended each time you use it: no password to retype. PrintLab must be served over **HTTPS**
+  (see [Behind a reverse proxy](#behind-a-reverse-proxy-https)).
 
 ---
 
@@ -129,6 +141,7 @@ The interface is available in **English and French** (**Settings → Appearance 
 | Hardware / software | Status |
 |---|---|
 | **QIDI X-Max 4 + QIDI Box** (firmware 01.01.07.01) | Used daily |
+| QIDI Box + **Valve Oil Box firmware** | Reads original Bambu Lab chips (tested with Valve Oil 26.11.18.2) |
 | Other **Klipper + Moonraker** printer | Spool management, tracking, files, camera and Slicer work; Box features are specific to the QIDI Box |
 | No printer | PrintLab works as a plain spool and invoice manager |
 | Server | Linux with Docker, **x86-64** architecture (OrcaSlicer is only released for x86-64 on Linux) |
@@ -368,6 +381,8 @@ By contributing, you agree that your contribution is published under the project
 - [three.js](https://threejs.org) and [three-mesh-bvh](https://github.com/gkjohnson/three-mesh-bvh) (MIT): 3D in the browser.
 - [manifold3d](https://github.com/elalish/manifold), [trimesh](https://github.com/mikedh/trimesh), [FastAPI](https://fastapi.tiangolo.com) and the other dependencies listed in `requirements.txt`.
 - RFID tag format taken from BoxRFID (TinkerBarn).
+- [Valve Oil](https://github.com/thelegendtubaguy/valve-oil) (GPL-3.0, thelegendtubaguy): QIDI Box firmware and Klipper module that make
+  original Bambu Lab chips readable. Not included in PrintLab; PrintLab uses what the Box reports.
 - Klipper, Moonraker, Fluidd and the QIDI X-Max 4 community.
 
 PrintLab is an independent project, **not affiliated with QIDI Technology**. QIDI, X-Max 4 and QIDI Box are trademarks of their owners,
