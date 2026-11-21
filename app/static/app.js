@@ -1257,7 +1257,7 @@ routes.files = async (el) => {
     const subs = flat ? [] : (data.dirs || []).filter(d => flDir(d) === st.cwd);
     const cnt = d => all.filter(f => f.path.startsWith(d + '/')).length;
     const W = !!data.write;
-    const crumbs = ['<a href="#" data-cd="">Racine</a>', ...st.cwd.split('/').filter(Boolean).map((x, i, a) => `<a href="#" data-cd="${esc(a.slice(0, i + 1).join('/'))}">${esc(x)}</a>`)].join(' › ');
+    const crumbs = ['<a href="#" data-cd="">Racine</a>', ...st.cwd.split('/').filter(Boolean).map((x, i, a) => `<a href="#" data-notr data-cd="${esc(a.slice(0, i + 1).join('/'))}">${esc(x)}</a>`)].join(' › ');
     const sk = FL_SORT[st.sort][1];
     items.sort((a, b) => { const x = sk(a), y = sk(b); return (x > y ? 1 : x < y ? -1 : 0) * st.dir; });
     FL_DUPS = new Map(); for (const f of all) FL_DUPS.set(flNorm(f), (FL_DUPS.get(flNorm(f)) || 0) + 1);
@@ -1270,11 +1270,18 @@ routes.files = async (el) => {
         <div class="gth">${i.thumb ? `<img src="${thumbUrl(f)}" alt="" loading="lazy">` : `<span class="mut sm">${f.info ? 'Pas d\'aperçu' : 'Analyse…'}</span>`}
           ${f.printing ? '<span class="tag ok gst">en cours</span>' : h && h.count ? `<span class="fcn" title="${h.count} impression(s), ${h.ok} terminée(s)">×${h.count}</span>` : ''}
           ${fl.length > 1 ? `<span class="fcs">${fl.length} couleurs</span>` : ''}</div>
-        <div class="fci"><b class="fcnm">${esc(flName(f.path))}</b>
+        <div class="fci"><b class="fcnm" data-notr>${esc(flName(f.path))}</b>
           <span class="mut ell">${[...new Set(fl.map(x => x.type).filter(Boolean))].join(' + ') || '–'}${i.layers ? ' · ' + fmt(i.layers) + ' couches' : ''}</span>
           <div class="fcw gmeta"><b>${dur(flTime(f))}</b><span class="mut">${g(flWeight(f))}</span>${dots(fl)}</div></div></div>`; };
-    const dcard = d => `<div class="fcard dcard" data-d="${esc(d)}" tabindex="0" role="button" draggable="${W}" title="${esc(d)}"><div class="gth dth"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 8.7v8.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg></div>
-        <div class="fci"><b class="fcnm">${esc(d.split('/').pop())}</b><span class="mut ell">${cnt(d)} fichier(s)</span>
+    // vignette de dossier : mosaïque des aperçus des 4 fichiers les plus récents (sous-dossiers compris), sinon icône
+    const dthumbs = d => {
+      const ico = '<svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 8.7v8.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>';
+      const t = all.filter(f => f.path.startsWith(d + '/') && f.info && f.info.thumb).sort((a, b) => b.modified - a.modified).slice(0, 4);
+      if (!t.length) return ico;
+      return `<div class="dmos n${t.length}">${t.map(f => `<img src="${thumbUrl(f)}" alt="" loading="lazy">`).join('')}</div><span class="dbadge">${ico.replace(/56/g, '16')}</span>`;
+    };
+    const dcard = d => `<div class="fcard dcard" data-d="${esc(d)}" tabindex="0" role="button" draggable="${W}" title="${esc(d)}"><div class="gth dth">${dthumbs(d)}</div>
+        <div class="fci"><b class="fcnm" data-notr>${esc(d.split('/').pop())}</b><span class="mut ell">${cnt(d)} fichier(s)</span>
         ${W ? `<div class="dact"><button class="btn sm" data-dren="${esc(d)}" title="Renommer">✎</button><button class="btn sm" data-ddel="${esc(d)}" title="Supprimer le dossier">✕</button></div>` : ''}</div></div>`;
     const pend = data.pending && data.progress ? `<span class="tag warn">analyse des fichiers : ${data.progress.done}/${data.progress.todo}</span>` : '';
     el.innerHTML = `<div class="bar"><h1 style="margin:0">Fichiers à imprimer</h1><span class="sp"></span>${pend}</div>

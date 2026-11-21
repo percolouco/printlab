@@ -453,3 +453,10 @@ main:has(> .sim){max-width:none}
 .ftr-row:hover{background:color-mix(in srgb,var(--pri) 8%,transparent)}
 .ftr-row.on{background:color-mix(in srgb,var(--pri) 18%,transparent);color:var(--pri);font-weight:600}
 .ftr-tw{width:14px;text-align:center;color:var(--mut);flex:none}.ftr-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* vignette de dossier : mosaïque de 1 à 4 aperçus */
+.dcard .dth{position:relative;aspect-ratio:1/1}
+.dmos{display:grid;gap:2px;width:100%;height:100%;aspect-ratio:1/1;background:var(--line)}
+.dmos img{width:100%;height:100%;object-fit:contain;background:var(--card);min-width:0;min-height:0}
+.dmos.n1{grid-template-columns:1fr}.dmos.n2{grid-template-columns:1fr 1fr}.dmos.n3,.dmos.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.dmos.n3 img:first-child{grid-row:span 2}
+.dbadge{position:absolute;left:8px;bottom:8px;display:flex;padding:5px;border-radius:8px;background:color-mix(in srgb,var(--card) 88%,transparent);color:var(--text);box-shadow:0 1px 4px #0003}
