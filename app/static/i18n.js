@@ -17,9 +17,6 @@
     location.reload();
   };
   window.plT = s => s;                       // traduction d'un texte isolé (utilisable par le code)
-  // bouton de langue de la barre du haut : affiche la langue vers laquelle on bascule
-  const setBtn = () => document.querySelectorAll('.langb').forEach(b => { b.textContent = LANG === 'en' ? 'FR' : 'EN'; b.title = LANG === 'en' ? 'Passer en français' : 'Switch to English'; });
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setBtn); else setBtn();
   if (LANG !== 'en') return;
   document.documentElement.lang = 'en';
 

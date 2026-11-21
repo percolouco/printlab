@@ -52,7 +52,7 @@ PrintLab brings all of that together in **a single web interface**, on desktop a
 By default, PrintLab **only reads** the printer's state. Write actions (pause, start, file deletion…) stay disabled
 until you enable them yourself.
 
-The interface is available in **English and French** (EN / FR button in the top bar; it follows your browser language by default).
+The interface is available in **English and French** (**Settings → Appearance → Language**; it follows your browser language by default).
 
 ---
 
@@ -204,7 +204,7 @@ Example Traefik labels:
 ### Settings page
 Everything else is set in the interface: printer address, write actions, low stock threshold, currency, themes,
 brands and materials shown, Home Assistant alerts (notification services, cost and energy entities),
-RFID encoder, automatic usage deduction, etc. The language is switched with the **EN / FR** button in the top bar.
+RFID encoder, automatic usage deduction, etc. The language is switched in **Settings → Appearance → Language**.
 
 ---
 
@@ -344,7 +344,7 @@ No. Slicing runs on the server's CPU; the 3D view runs in your browser.
 Everything that goes through Klipper/Moonraker works. The pages and features specific to the QIDI Box won't be useful to you.
 
 **Is the interface available in English?**
-Yes, since version 1.1: click **EN** in the top bar (English is chosen automatically if your browser isn't in French).
+Yes, since version 1.1: go to **Settings → Appearance → Language** (English is chosen automatically if your browser isn't in French).
 Spotted a French word left over or a clumsy translation? Open an issue or a pull request on `app/static/i18n-en.js`.
 
 ---

@@ -1550,7 +1550,8 @@ routes.settings = async (el) => {
   <div class="sec">Apparence</div><div class="box">${row('Thème', 'Couleurs de l\'interface. Le choix est mémorisé sur cet appareil.', '')}
     <div class="themes" id="theme">${THEMES.map(([k, l, d]) => `<button class="th ${theme === k ? 'on' : ''}" data-t="${k}" ${k === 'system' ? '' : `data-theme="${k}"`} type="button" aria-pressed="${theme === k}">
       <div class="pv"><div class="c"><i class="p"></i><i></i><i></i></div><div class="dots"><u style="background:var(--ok)"></u><u style="background:var(--warn)"></u><u style="background:var(--bad)"></u></div></div>
-      <div class="nm">${l}<span>${d}</span></div></button>`).join('')}</div></div>
+      <div class="nm">${l}<span>${d}</span></div></button>`).join('')}</div>
+    ${row('Langue', 'Langue de toute l\'interface, Slicer compris. Le choix est mémorisé sur cet appareil.', `<div class="chips" id="lang" data-notr>${[['fr', 'Français'], ['en', 'English']].map(([k, l]) => `<button class="chip ${PL_LANG === k ? 'on' : ''}" data-l="${k}" type="button">${l}</button>`).join('')}</div>`)}</div>
   <div class="sec">Menus affichés</div><div class="box">${row('Menus de la barre du haut', 'Décoche ce que tu n\'utilises pas pour le masquer. Le tableau de bord et les paramètres restent toujours visibles. Le choix est enregistré pour tous tes appareils.', '')}
     <div class="brands" id="menus">${MENUS.map(([k, l, d]) => `<label class="bchip ${(S.hidden_menus || []).includes(k) ? '' : 'on'}" title="${esc(d)}"><input type="checkbox" data-m="${k}" ${(S.hidden_menus || []).includes(k) ? '' : 'checked'}> ${l}</label>`).join('')}</div></div>
   <div class="sec">Général</div><div class="box">
@@ -1579,6 +1580,7 @@ routes.settings = async (el) => {
     ${row('Export CSV', 'Toutes les bobines', '<a class="btn" href="/api/export/spools.csv">Télécharger</a>')}</div>
   <div class="sec">Session</div><div class="box">${row('Déconnexion', 'Fermer la session sur ce navigateur', '<button class="btn" id="out">Se déconnecter</button>')}</div>
   <p class="mut" style="margin-top:18px">PrintLab · <a href="#/printer">Imprimante</a></p></div>`;
+  el.querySelectorAll('#lang [data-l]').forEach(b => b.onclick = () => { if (b.dataset.l !== PL_LANG) plSetLang(b.dataset.l); });
   el.querySelectorAll('#theme button').forEach(b => b.onclick = () => { try { localStorage.setItem('pl-theme', b.dataset.t); } catch {} applyTheme(); el.querySelectorAll('#theme button').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); });
   el.querySelectorAll('#menus input').forEach(i => i.onchange = () => {
     const hid = [...el.querySelectorAll('#menus input')].filter(x => !x.checked).map(x => x.dataset.m);

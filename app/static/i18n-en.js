@@ -1671,6 +1671,8 @@ window.PL_EN = {
 "consigne {}°": "target {}°",
 "consigne": "target",
 "Accueil": "Home",
+"Langue": "Language",
+"Langue de toute l'interface, Slicer compris. Le choix est mémorisé sur cet appareil.": "Language of the whole interface, Slicer included. The choice is remembered on this device.",
 "Simulateur de macros": "Macro simulator",
 "Plus": "More",
 "consommés ·": "used ·",

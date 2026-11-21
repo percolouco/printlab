@@ -56,7 +56,7 @@ PrintLab réunit tout ça dans **une seule interface web**, utilisable aussi bie
 Par défaut, PrintLab **ne fait que lire** l'état de l'imprimante. Les actions d'écriture (pause, lancement, suppression de
 fichiers…) sont désactivées tant que tu ne les actives pas toi-même.
 
-L'interface existe en **français et en anglais** (bouton EN / FR dans la barre du haut ; par défaut, la langue du navigateur).
+L'interface existe en **français et en anglais** (choix dans **Paramètres → Apparence → Langue** ; par défaut, la langue du navigateur).
 
 ---
 
@@ -206,7 +206,7 @@ Exemple d'étiquettes Traefik :
 ### Page Paramètres
 Tout le reste se règle dans l'interface : adresse de l'imprimante, actions d'écriture, seuil de stock bas, devise, thèmes,
 marques et matières affichées, alertes Home Assistant (services de notification, entités de coût et d'énergie),
-encodeur RFID, déduction automatique de la consommation, etc. La langue se change avec le bouton **EN / FR** de la barre du haut.
+encodeur RFID, déduction automatique de la consommation, etc. La langue se change dans **Paramètres → Apparence → Langue**.
 
 ---
 
@@ -346,7 +346,7 @@ Non. La découpe tourne sur le processeur du serveur ; l'affichage 3D tourne dan
 Tout ce qui passe par Klipper/Moonraker fonctionne. Les pages et fonctions spécifiques à la QIDI Box ne te serviront pas.
 
 **L'interface existe-t-elle en anglais ?**
-Oui, depuis la version 1.1 : bouton **EN** dans la barre du haut (l'anglais est choisi automatiquement si ton navigateur n'est pas en français).
+Oui, depuis la version 1.1 : **Paramètres → Apparence → Langue** (l'anglais est choisi automatiquement si ton navigateur n'est pas en français).
 Un mot oublié ou une traduction maladroite ? Ouvre une issue ou une pull request sur `app/static/i18n-en.js`.
 
 ---

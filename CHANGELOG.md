@@ -3,6 +3,15 @@
 Toutes les évolutions notables de PrintLab. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [Non publié]
+
+### Ajouté
+- **Appli installable (PWA)** : icône sur l'écran d'accueil (iOS, Android), plein écran, barre d'onglets en bas sur téléphone,
+  session prolongée à chaque utilisation.
+
+### Modifié
+- Le choix de la langue passe de la barre du haut à **Paramètres → Apparence → Langue**.
+
 ## [1.2.0] — 2026-11-21
 
 ### Ajouté
