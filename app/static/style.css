@@ -447,3 +447,9 @@ main:has(> .sim){max-width:none}
 .fcard[draggable=true]{cursor:grab}.fcard.dragging{opacity:.45}
 .fcard.dropon,.crumbs a.dropon{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri);background:color-mix(in srgb,var(--pri) 12%,var(--card))}
 .crumbs a.dropon{border-radius:6px;padding:2px 6px}
+/* fenêtre « Déplacer » : arborescence des dossiers */
+.ftr{border:1px solid var(--line);border-radius:8px;max-height:min(50vh,360px);overflow:auto;padding:4px 0;background:var(--bg)}
+.ftr-row{display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;user-select:none;color:var(--text)}
+.ftr-row:hover{background:color-mix(in srgb,var(--pri) 8%,transparent)}
+.ftr-row.on{background:color-mix(in srgb,var(--pri) 18%,transparent);color:var(--pri);font-weight:600}
+.ftr-tw{width:14px;text-align:center;color:var(--mut);flex:none}.ftr-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

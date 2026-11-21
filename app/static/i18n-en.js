@@ -1,5 +1,10 @@
 // Dictionnaire français → anglais de PrintLab (généré ; « {} » = valeur insérée, « {-} » = valeur ignorée en anglais).
 window.PL_EN = {
+"(actuel)": "(current)",
+"Déjà dans ce dossier": "Already in this folder",
+"Déplacer ici": "Move here",
+"+ Créer": "+ Create",
+"Nouveau dossier dans la sélection…": "New folder inside the selection…",
 "Pour ranger : glisse un fichier ou un dossier sur un dossier, ou sur le chemin en haut (« Racine ») pour le remonter.": "To organize: drag a file or folder onto a folder, or onto the path at the top (“Root”) to move it up.",
 "« {} » existe déjà dans ce dossier": "“{}” already exists in this folder",
 "Déplacé dans « {} »": "Moved to “{}”",

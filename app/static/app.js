@@ -1213,6 +1213,38 @@ async function mapDialog(title, intro, fl, okLabel) {
   });
 }
 
+// fenêtre « Déplacer » : arborescence des dossiers de l'imprimante, création d'un sous-dossier possible
+function pickFolder(dirs, cur, name, mkdir) {
+  return new Promise(resolve => {
+    let sel = cur, open = new Set(['']);
+    for (let d = cur; d; d = flDir(d)) open.add(d);
+    const kids = p => [...new Set(dirs.filter(d => flDir(d) === p))].sort((a, b) => a.localeCompare(b));
+    const ico = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 8.7v8.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>';
+    const node = (p, lvl) => { const k = kids(p), o = open.has(p);
+      return `<div class="ftr-row${sel === p ? ' on' : ''}" data-f="${esc(p)}" style="padding-left:${8 + lvl * 18}px">
+        <span class="ftr-tw" data-tw="${esc(p)}">${k.length ? (o ? '▾' : '▸') : ''}</span>${ico}<span class="ftr-n"${p ? " data-notr" : ""}>${esc(p ? p.split('/').pop() : 'Racine')}</span>${p === cur ? '<span class="mut sm">(actuel)</span>' : ''}</div>
+        ${o ? k.map(c => node(c, lvl + 1)).join('') : ''}`; };
+    const fin = v => { closeModal(); resolve(v); };
+    modal(`<h2>Déplacer</h2><p class="mut ell" style="margin-top:-6px">${esc(name)}</p><div class="ftr"></div>
+      <div class="bar" style="margin-top:10px"><input class="ftr-new" placeholder="Nouveau dossier dans la sélection…" style="flex:1;min-width:0"><button class="btn" data-mk>+ Créer</button></div>
+      <div class="acts"><button class="btn" data-r="0">Annuler</button><button class="btn primary" data-r="1">Déplacer ici</button></div>`);
+    const M = $('#modal'), T = M.querySelector('.ftr'), ok = M.querySelector('[data-r="1"]');
+    const render = () => { T.innerHTML = node('', 0); ok.disabled = sel === cur; ok.textContent = sel === cur ? 'Déjà dans ce dossier' : 'Déplacer ici'; };
+    T.onclick = e => { const tw = e.target.closest('[data-tw]'); if (tw && kids(tw.dataset.tw).length) { const p = tw.dataset.tw; open.has(p) ? open.delete(p) : open.add(p); return render(); }
+      const r = e.target.closest('[data-f]'); if (r) { sel = r.dataset.f; open.add(sel); render(); } };
+    T.ondblclick = e => { const r = e.target.closest('[data-f]'); if (r && r.dataset.f !== cur) fin(r.dataset.f); };
+    const mk = async () => { const inp = M.querySelector('.ftr-new'), n = inp.value.trim().replace(/[\/]+/g, '-'); if (!n) return inp.focus();
+      const path = (sel ? sel + '/' : '') + n; if (dirs.includes(path)) { sel = path; return render(); }
+      try { await mkdir(path); } catch (e) { return toast(e.message); }
+      dirs = [...dirs, path]; open.add(sel); sel = path; inp.value = ''; render(); };
+    M.querySelector('[data-mk]').onclick = mk;
+    M.querySelector('.ftr-new').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); mk(); } };
+    M.querySelectorAll('[data-r]').forEach(b => b.onclick = () => fin(b.dataset.r === '1' ? sel : null));
+    M.onclick = e => { if (e.target === M) fin(null); };
+    render();
+  });
+}
+
 routes.files = async (el) => {
   const st = filesState;
   let data = await api('/files'), all = data.files;
@@ -1329,10 +1361,10 @@ routes.files = async (el) => {
       const dest = (flDir(f.path) ? flDir(f.path) + '/' : '') + n.trim().replace(/[\/]/g, '_') + ext;
       if (await act(() => api('/files/move', {method: 'POST', body: {src: f.path, dest}}), 'Renommé')) { st.sel = dest; await reload(); }
     } else if (a === 'move') {
-      const dirs = ['', ...(data.dirs || [])], cur = flDir(f.path);
-      const d = prompt(`Dossier de destination (vide = racine) :\n${dirs.filter(Boolean).map(x => '• ' + x).join('\n') || '(aucun dossier : crée-en un avec « + Nouveau dossier »)'}`, cur);
-      if (d == null || d.trim() === cur) return;
-      const dest = (d.trim() ? d.trim().replace(/\/+$/, '') + '/' : '') + f.path.split('/').pop();
+      const cur = flDir(f.path), d = await pickFolder(data.dirs || [], cur, flName(f.path), async n => { await api('/files/mkdir', {method: 'POST', body: {path: n}}); data.dirs = [...(data.dirs || []), n]; });
+      if (d == null || d === cur) return;
+      const dest = (d ? d + '/' : '') + f.path.split('/').pop();
+      if (all.some(x => x.path === dest)) return toast(`« ${dest.split('/').pop()} » existe déjà dans ce dossier`);
       if (await act(() => api('/files/move', {method: 'POST', body: {src: f.path, dest}}), 'Déplacé')) { closeDrawer(); await reload(); }
     }
   };
