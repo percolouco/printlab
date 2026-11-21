@@ -94,6 +94,23 @@ async function route() {
   try { await fn($('#main'), rest); } catch (e) { if (e.message !== '401') $('#main').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
 }
 addEventListener('hashchange', route);
+// ---------- appli installée (écran d'accueil iOS / Android) : barre d'onglets en bas ----------
+const PWA = (() => { let v = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true || /[?&]pwa=1/.test(location.search);
+  try { if (v) sessionStorage.setItem('pl-pwa', '1'); else v = sessionStorage.getItem('pl-pwa') === '1'; } catch {} return v; })();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+function tabSync() {
+  const tb = $('#tabbar'); if (!tb) return;
+  const name = (location.hash.slice(2) || '').split('/')[0], main = ['', 'dashboard', 'printer', 'files', 'box'];
+  tb.querySelectorAll('[data-tab]').forEach(a => a.classList.toggle('on', a.dataset.tab === 'more' ? !main.includes(name) : a.dataset.tab === (name === 'dashboard' ? '' : name)));
+  $('#tabmore').hidden = true;
+}
+if (PWA) {
+  document.documentElement.classList.add('pwa');
+  $('#tabbar').hidden = false;
+  $('#tabbar [data-tab="more"]').onclick = () => { $('#tabmore').hidden = !$('#tabmore').hidden; };
+  $('#tabmore').onclick = e => { if (e.target.id === 'tabmore' || e.target.closest('a')) $('#tabmore').hidden = true; };
+  addEventListener('hashchange', tabSync); tabSync();
+}
 // Menus masquables (réglage « hidden_menus », copie locale pour éviter le clignotement au chargement)
 const MENUS = [['printer', 'Imprimante', 'Fichiers à imprimer, impressions, sauvegardes'], ['box', 'Box', 'QIDI Box'], ['spools', 'Filaments', 'Bobines, filaments, marques'],
   ['invoices', 'Factures', 'Import des factures'], ['models', 'Modèles 3D', 'Recherche de modèles'], ['slicer', 'Slicer', 'Découpe et envoi à l\'imprimante'],

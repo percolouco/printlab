@@ -479,3 +479,24 @@ main:has(> .sim){max-width:none}
 .pdry{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}.pdry-h{margin-bottom:6px}.pdry .chip:disabled{opacity:.45;cursor:not-allowed}
 .pdry-f{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}.pdry-f input{width:80px}.warnc{color:var(--warn)}
 .pdry-pend{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* Appli installée (écran d'accueil) : en-tête compact + barre d'onglets en bas, sur téléphone */
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:7;display:flex;background:var(--nav);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+#tabbar[hidden],#tabmore[hidden]{display:none!important}
+#tabbar a,#tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;color:var(--mut);text-decoration:none;font:500 10.5px/1.1 var(--f-body);background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#tabbar svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;stroke-linecap:round}
+#tabbar .on{color:var(--pri)}
+#tabmore{position:fixed;inset:0;z-index:7;background:#0006}
+.tm-sheet{position:absolute;left:0;right:0;bottom:calc(57px + env(safe-area-inset-bottom));background:var(--card);border-radius:14px 14px 0 0;padding:8px 10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px;box-shadow:var(--pop)}
+.tm-grip{grid-column:1/-1;width:40px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 6px}
+.tm-sheet a{padding:13px 12px;border-radius:8px;color:var(--text);text-decoration:none;background:var(--bg);font-size:15px}
+@media(min-width:761px){#tabbar,#tabmore{display:none!important}}
+@media(max-width:760px){
+  .pwa #nav{position:sticky!important;top:0;flex-wrap:nowrap;height:auto;min-height:0;padding:env(safe-area-inset-top) 12px 0;overflow:visible}
+  .pwa #nav>.top,.pwa #nav>.menu,.pwa #nav .gsearch{display:none!important}
+  .pwa #nav .brand{flex:0 0 auto;width:auto;margin:8px 0;font-size:19px}
+  .pwa #nav .sp{display:block;flex:1}
+  .pwa #nav .add{padding:7px 12px;font-size:13px;margin:6px 0}
+  .pwa #main{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+  .pwa .selbar{bottom:calc(66px + env(safe-area-inset-bottom))}
+  .pwa #toast{bottom:calc(70px + env(safe-area-inset-bottom))}
+}

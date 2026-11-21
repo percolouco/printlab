@@ -52,7 +52,7 @@ SECRET_KEY = _secret_key()
 ENV_MOONRAKER = os.environ.get("MOONRAKER_URL", "").strip()
 ENV_SPOOLMAN = os.environ.get("SPOOLMAN_URL", "").strip()
 COOKIE = "printlab_session"
-SESSION_DAYS = 30
+SESSION_DAYS = 90
 
 app = FastAPI(title="PrintLab", docs_url=None, redoc_url=None)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
@@ -103,14 +103,26 @@ def _authenticated(request: Request):
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
     p = request.url.path
-    public = p in ("/login", "/api/login", "/healthz", "/favicon.svg", "/static/style.css", "/static/themes.css", "/static/favicon.svg", "/static/login.html", "/static/i18n.js", "/static/i18n-en.js")
+    public = p in ("/login", "/api/login", "/healthz", "/favicon.svg", "/static/style.css", "/static/themes.css", "/static/favicon.svg", "/static/login.html", "/static/i18n.js", "/static/i18n-en.js",
+                   "/manifest.webmanifest", "/sw.js", "/apple-touch-icon.png", "/apple-touch-icon-precomposed.png") or p.startswith("/static/icons/")
     if p.startswith("/api/v1/") and _lan_direct(request):
         public = True
     if not public and not _authenticated(request):
         if p.startswith(("/api/", "/slicer/api/")):
             return JSONResponse({"detail": "Non authentifié"}, status_code=401)
         return RedirectResponse("/login")
-    return await call_next(request)
+    resp = await call_next(request)
+    # session glissante : une session utilisée est prolongée (l'appli installée sur le téléphone ne redemande pas le mot de passe)
+    tok = request.cookies.get(COOKIE)
+    if tok and not public and not p.startswith("/api/v1/"):
+        try:
+            _, ts = signer.loads(tok, max_age=SESSION_DAYS * 86400, return_timestamp=True)
+            if (datetime.now(timezone.utc) - ts).total_seconds() > 86400:
+                resp.set_cookie(COOKIE, signer.dumps("ok"), max_age=SESSION_DAYS * 86400, httponly=True,
+                                secure=request.url.scheme == "https", samesite="lax")
+        except BadSignature:
+            pass
+    return resp
 
 
 @app.get("/healthz")
@@ -121,6 +133,23 @@ def healthz():
 @app.get("/favicon.svg")
 def favicon():
     return FileResponse(STATIC_DIR / "favicon.svg", media_type="image/svg+xml")
+
+
+@app.get("/manifest.webmanifest")
+def manifest():
+    return FileResponse(STATIC_DIR / "manifest.webmanifest", media_type="application/manifest+json")
+
+
+@app.get("/sw.js")
+def service_worker():
+    # servi à la racine pour couvrir tout le site ; jamais mis en cache par le navigateur
+    return FileResponse(STATIC_DIR / "sw.js", media_type="text/javascript", headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"})
+
+
+@app.get("/apple-touch-icon.png")
+@app.get("/apple-touch-icon-precomposed.png")
+def apple_icon():
+    return FileResponse(STATIC_DIR / "icons" / "apple-touch-icon.png", media_type="image/png")
 
 
 @app.get("/login")

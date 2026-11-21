@@ -1,0 +1,23 @@
+{
+  "name": "PrintLab",
+  "short_name": "PrintLab",
+  "description": "Filaments, imprimante et QIDI Box",
+  "id": "/",
+  "start_url": "/?pwa=1",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3f5f7",
+  "theme_color": "#b4531f",
+  "lang": "fr",
+  "icons": [
+    {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/static/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Imprimante", "url": "/?pwa=1#/printer"},
+    {"name": "Fichiers à imprimer", "url": "/?pwa=1#/files"},
+    {"name": "QIDI Box", "url": "/?pwa=1#/box"}
+  ]
+}
