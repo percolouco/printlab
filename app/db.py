@@ -1,6 +1,7 @@
 """Base SQLite de PrintLab."""
 import os
 import sqlite3
+import threading
 from pathlib import Path
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
@@ -74,4 +75,29 @@ def init():
     if "meta" not in [r[1] for r in c.execute("PRAGMA table_info(tracks)")]:
         c.execute("ALTER TABLE tracks ADD COLUMN meta TEXT")     # {elec: {kwh, eur}, rating, note}
     c.commit()
-    return c
+    c.close()
+    return ThreadDB()
+
+
+class ThreadDB:
+    """Une connexion SQLite par thread : FastAPI exécute les routes en parallèle dans un pool
+    de threads, et une connexion partagée finit en « bad parameter or other API misuse »
+    quand deux requêtes arrivent en même temps (ex. tableau de bord : stats + bobines)."""
+
+    def __init__(self):
+        self._local = threading.local()
+
+    def _conn(self):
+        c = getattr(self._local, "c", None)
+        if c is None:
+            c = self._local.c = connect()
+        return c
+
+    def __getattr__(self, name):
+        return getattr(self._conn(), name)
+
+    def __enter__(self):
+        return self._conn().__enter__()
+
+    def __exit__(self, *exc):
+        return self._conn().__exit__(*exc)
