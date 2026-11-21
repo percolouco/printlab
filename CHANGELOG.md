@@ -3,6 +3,21 @@
 Toutes les évolutions notables de PrintLab. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.2.0] — 2026-11-21
+
+### Ajouté
+- **Séchage au lancement d'une impression** : dans la fenêtre « Lancer l'impression », sécher la Box **avant** (l'impression
+  démarre automatiquement à la fin du séchage, avec une alerte) ou **pendant** l'impression. Température et durée proposées
+  selon les matières du fichier ; impression programmée visible et annulable sur la page Box.
+- **RFID Bambu Lab** : avec le micrologiciel de Box Valve Oil, les puces d'origine des bobines Bambu Lab sont lues et la bobine
+  correspondante du stock est associée automatiquement à l'emplacement (voir docs/RFID.md).
+- **Fichiers à imprimer** : glisser-déposer vers un dossier, fenêtre « Déplacer » avec arborescence, vignette de dossier en
+  mosaïque, actions au survol (sélection, imprimer, renommer, supprimer) et actions groupées.
+
+### Corrigé
+- Erreurs 500 aléatoires : une connexion SQLite par thread.
+- Unités Mo/Go/Ko affichées MB/GB/KB en anglais.
+
 ## [1.1.0] — 2026-11-20
 
 ### Ajouté

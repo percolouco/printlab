@@ -267,7 +267,7 @@ Restauration : remets le dossier `data/` et le `.env`, puis `docker compose up -
 docker compose pull && docker compose up -d
 ```
 
-- Chaque version publiée a son **tag** (`ghcr.io/percolouco/printlab:1.1.0`). Pour ne rien subir, fixe une version dans
+- Chaque version publiée a son **tag** (`ghcr.io/percolouco/printlab:1.2.0`). Pour ne rien subir, fixe une version dans
   `docker-compose.yml` et change-la quand tu le décides.
 - La base est migrée automatiquement au démarrage. **Fais une sauvegarde avant** une mise à jour majeure.
 - Évite de mettre à jour **pendant une impression** : le suivi reprend après le redémarrage, mais autant être prudent.
