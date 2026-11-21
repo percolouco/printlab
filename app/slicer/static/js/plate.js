@@ -321,7 +321,7 @@ export class Plate {
       if (this.bedAssets) sub.add(bedDecor(pts, this.bedAssets, { dim: !cur }));
       sub.add(mkLines(fine, 0x5a6068, cur ? 0.5 : 0.25));
       sub.add(mkLines(bold, 0x7a828b, cur ? 0.8 : 0.4));
-      // zones exclues (ex. bac de purge de la X-Max 4)
+      // zones exclues (ex. bac de purge de la Max 4)
       for (const poly of this.bed.exclude) {
         if (poly.length < 3) continue;
         const m = new THREE.Mesh(new THREE.ShapeGeometry(new THREE.Shape(poly.map(([x, y]) => new THREE.Vector2(x, y)))),

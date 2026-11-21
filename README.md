@@ -4,7 +4,7 @@
 
 **L'atelier de ton imprimante 3D dans un navigateur : bobines, imprimante, QIDI Box et Slicer, au même endroit.**
 
-Auto-hébergé · Docker · Klipper / Moonraker · pensé pour la **QIDI X-Max 4** et la **QIDI Box**
+Auto-hébergé · Docker · Klipper / Moonraker · pensé pour la **QIDI Max 4** et la **QIDI Box**
 
 🇫🇷 Français · [🇬🇧 English](README.en.md)
 
@@ -139,7 +139,7 @@ L'interface existe en **français et en anglais** (choix dans **Paramètres → 
 
 | Matériel / logiciel | État |
 |---|---|
-| **QIDI X-Max 4 + QIDI Box** (firmware 01.01.07.01) | Testé au quotidien |
+| **QIDI Max 4 + QIDI Box** (firmware 01.01.07.01) | Testé au quotidien |
 | QIDI Box + **micrologiciel Box Valve Oil** | Lecture des puces d'origine Bambu Lab (testé avec Valve Oil 26.11.18.2) |
 | Autre imprimante **Klipper + Moonraker** | Gestion des bobines, suivi, fichiers, caméra et Slicer fonctionnent ; les fonctions Box sont propres à la QIDI Box |
 | Sans imprimante | PrintLab fonctionne comme simple gestionnaire de bobines et de factures |
@@ -382,9 +382,9 @@ En contribuant, tu acceptes que ta contribution soit publiée sous la licence AG
 - Format des étiquettes RFID repris de BoxRFID (TinkerBarn).
 - [Valve Oil](https://github.com/thelegendtubaguy/valve-oil) (GPL-3.0, thelegendtubaguy) : micrologiciel de la QIDI Box et module Klipper
   qui permettent de lire les puces d'origine Bambu Lab. Non inclus dans PrintLab ; PrintLab utilise ce que la Box annonce.
-- Klipper, Moonraker, Fluidd et la communauté QIDI X-Max 4.
+- Klipper, Moonraker, Fluidd et la communauté QIDI Max 4.
 
-PrintLab est un projet indépendant, **non affilié à QIDI Technology**. QIDI, X-Max 4 et QIDI Box sont des marques de leurs propriétaires,
+PrintLab est un projet indépendant, **non affilié à QIDI Technology**. QIDI, Max 4 et QIDI Box sont des marques de leurs propriétaires,
 citées uniquement pour indiquer la compatibilité.
 
 ---

@@ -1,4 +1,4 @@
-# Correctifs côté imprimante (QIDI X-Max 4)
+# Correctifs côté imprimante (QIDI Max 4)
 
 ## eject_slot_fix.py — déchargement Box qui met Klipper en shutdown
 

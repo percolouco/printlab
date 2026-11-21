@@ -4,7 +4,7 @@
 
 **Your 3D printer's workshop in a browser: spools, printer, QIDI Box and Slicer, all in one place.**
 
-Self-hosted · Docker · Klipper / Moonraker · built for the **QIDI X-Max 4** and the **QIDI Box**
+Self-hosted · Docker · Klipper / Moonraker · built for the **QIDI Max 4** and the **QIDI Box**
 
 🇬🇧 English · [🇫🇷 Français](README.md)
 
@@ -140,7 +140,7 @@ The interface is available in **English and French** (**Settings → Appearance 
 
 | Hardware / software | Status |
 |---|---|
-| **QIDI X-Max 4 + QIDI Box** (firmware 01.01.07.01) | Used daily |
+| **QIDI Max 4 + QIDI Box** (firmware 01.01.07.01) | Used daily |
 | QIDI Box + **Valve Oil Box firmware** | Reads original Bambu Lab chips (tested with Valve Oil 26.11.18.2) |
 | Other **Klipper + Moonraker** printer | Spool management, tracking, files, camera and Slicer work; Box features are specific to the QIDI Box |
 | No printer | PrintLab works as a plain spool and invoice manager |
@@ -383,9 +383,9 @@ By contributing, you agree that your contribution is published under the project
 - RFID tag format taken from BoxRFID (TinkerBarn).
 - [Valve Oil](https://github.com/thelegendtubaguy/valve-oil) (GPL-3.0, thelegendtubaguy): QIDI Box firmware and Klipper module that make
   original Bambu Lab chips readable. Not included in PrintLab; PrintLab uses what the Box reports.
-- Klipper, Moonraker, Fluidd and the QIDI X-Max 4 community.
+- Klipper, Moonraker, Fluidd and the QIDI Max 4 community.
 
-PrintLab is an independent project, **not affiliated with QIDI Technology**. QIDI, X-Max 4 and QIDI Box are trademarks of their owners,
+PrintLab is an independent project, **not affiliated with QIDI Technology**. QIDI, Max 4 and QIDI Box are trademarks of their owners,
 mentioned only to indicate compatibility.
 
 ---

@@ -45,7 +45,7 @@ la Box ne sait lire qu'avec la clé par défaut. Le micrologiciel Box de **Valve
 lecture et le décodage se font ensuite dans Klipper par le module `box_rfid` de Valve Oil. **Tout le mérite de la lecture revient au
 projet Valve Oil** : PrintLab se contente d'exploiter ce que la Box annonce.
 
-### Installation (partie RFID seule, testée avec Valve Oil 26.11.18.2 sur X-Max 4)
+### Installation (partie RFID seule, testée avec Valve Oil 26.11.18.2 sur Max 4)
 Deux possibilités :
 - **Valve Oil complet** (`./install.sh`) : installe tout, RFID compris. Rien d'autre à faire. Attention, il modifie beaucoup de choses
   sur l'imprimante (Fluidd, Moonraker, services) ; lis sa documentation.
