@@ -476,3 +476,6 @@ main:has(> .sim){max-width:none}
 .fcard:hover .gth>.fcs,.fcard:hover .gth>.gst,.fcard:hover .dbadge,.picking .dbadge{opacity:0}
 .selbar{position:sticky;bottom:12px;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding:10px 14px;border:1px solid var(--pri);border-radius:12px;background:var(--card);box-shadow:0 8px 24px #0000003d}
 @media(hover:none){.gth .cov{opacity:1;background:none}.cov .cpl{display:none}}
+.pdry{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}.pdry-h{margin-bottom:6px}.pdry .chip:disabled{opacity:.45;cursor:not-allowed}
+.pdry-f{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}.pdry-f input{width:80px}.warnc{color:var(--warn)}
+.pdry-pend{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}

@@ -987,6 +987,7 @@ async def _start_tracker():
     asyncio.create_task(_rfid_loop())
     asyncio.create_task(BOXHEAT.run())
     asyncio.create_task(BACKUPS.run())
+    asyncio.create_task(_dry_then_print_loop())
 
 
 def _track_out(r):
@@ -1213,7 +1214,9 @@ async def box():
 
 @app.get("/api/box/heat")
 async def box_heat():
-    return await BOXHEAT.status()
+    out = await BOXHEAT.status()
+    out["pending_print"] = _dry_pending()
+    return out
 
 
 @app.post("/api/box/heat")
@@ -1803,20 +1806,67 @@ async def printer_job(action: str, body: dict = Body(default={})):
     return {"ok": True}
 
 
-@app.post("/api/files/print")
-async def gfiles_print(body: dict = Body(...)):
-    _need_write()
-    path = _clean_path(body.get("path"))
+async def _print_ready():
     state, _ = await _print_state()
     if state in ("printing", "paused"):
         raise HTTPException(409, "Une impression est déjà en cours")
     info = await mr("/printer/info")
     if info.get("state") != "ready":
         raise HTTPException(409, f"Imprimante pas prête (Klipper : {info.get('state')})")
+
+
+DRY_KEY = "print_after_dry"
+
+
+def _dry_pending():
+    r = rows("SELECT value FROM settings WHERE key=?", (DRY_KEY,))
+    try:
+        return json.loads(r[0]["value"]) if r else None
+    except Exception:
+        return None
+
+
+def _dry_pending_set(v):
+    if v is None:
+        DB.execute("DELETE FROM settings WHERE key=?", (DRY_KEY,))
+    else:
+        DB.execute("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                   (DRY_KEY, json.dumps(v)))
+    DB.commit()
+
+
+@app.post("/api/files/print")
+async def gfiles_print(body: dict = Body(...)):
+    """Lance une impression, éventuellement avec séchage de la Box : `dry.mode` = "during" (chauffage démarré puis
+    impression lancée) ou "before" (chauffage démarré, impression lancée automatiquement à la fin du séchage)."""
+    _need_write()
+    path = _clean_path(body.get("path"))
+    await _print_ready()
+    dry = body.get("dry") or {}
+    mode = dry.get("mode")
+    if mode in ("before", "during"):
+        if _dry_pending():
+            raise HTTPException(409, "Une impression attend déjà la fin d'un séchage (page Box pour l'annuler)")
+        cur = BOXHEAT.load()
+        try:
+            if not (mode == "before" and cur.get("active")):    # séchage déjà en cours : on attend sa fin
+                await BOXHEAT.start(dry.get("temp", 50), dry.get("hours", 4), dry.get("hum_stop", 0 if mode == "during" else 15))
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        except Exception as e:
+            raise HTTPException(502, "Imprimante injoignable : " + str(e)[:150])
+        if mode == "before":
+            _dry_pending_set({"path": path, "mapping": body.get("mapping") or {}, "relays": body.get("relays") or [],
+                              "created": time.time(), "heat_started": BOXHEAT.load().get("started")})
+            return {"ok": True, "queued": True}
+    await _launch_print(path, body.get("mapping") or {}, body.get("relays") or [])
+    return {"ok": True}
+
+
+async def _launch_print(path, mp, relays):
     # relais choisis dans la fenêtre de lancement, puis outil → emplacement (value_tN, comme l'écran avant un print)
-    for r in body.get("relays") or []:
+    for r in relays:
         await box_slot_relay(int(r["slot"]), {"source": int(r["source"])})
-    mp = body.get("mapping") or {}
     if mp:
         cur = ((await mr("/printer/objects/query", {"save_variables": ""}))["status"].get("save_variables") or {}).get("variables") or {}
         for t, slot in mp.items():
@@ -1827,7 +1877,50 @@ async def gfiles_print(body: dict = Body(...)):
                 await mr_send("POST", "/printer/gcode/script", params={"script": f"SAVE_VARIABLE VARIABLE=value_t{t} VALUE='\"slot{slot}\"'"})
     await mr_send("POST", "/printer/print/start", params={"filename": path})
     _fl_invalidate()
+
+
+@app.delete("/api/files/print/pending")
+async def gfiles_print_pending_cancel(stop_heat: int = 0):
+    _need_write()
+    _dry_pending_set(None)
+    if stop_heat and BOXHEAT.load().get("active"):
+        try:
+            await BOXHEAT.stop()
+        except Exception as e:
+            raise HTTPException(502, "Imprimante injoignable : " + str(e)[:150])
     return {"ok": True}
+
+
+async def _dry_then_print_loop():
+    """Lance l'impression programmée quand le séchage « avant impression » se termine."""
+    while True:
+        await asyncio.sleep(30)
+        try:
+            p = _dry_pending()
+            if not p:
+                continue
+            st = BOXHEAT.load()
+            if st.get("active"):
+                continue
+            name = p["path"].rsplit("/", 1)[-1]
+            _dry_pending_set(None)
+            reason = st.get("reason") or ""
+            if reason == "arrêt manuel" or reason.startswith("chauffage arrêté"):
+                await alert("dry", "🔥 Séchage interrompu", f"Le séchage a été arrêté ({reason}) : l'impression de {name} n'est pas lancée.")
+                continue
+            if time.time() - p.get("created", 0) > 26 * 3600:
+                continue
+            try:
+                _need_write()
+                await _print_ready()
+                await _launch_print(p["path"], p.get("mapping") or {}, p.get("relays") or [])
+            except Exception as e:
+                msg = getattr(e, "detail", None) or str(e)
+                await alert("dry", "⚠️ Impression non lancée", f"Séchage terminé ({reason}) mais l'impression de {name} n'a pas pu démarrer : {msg}")
+                continue
+            await alert("dry", "🔥 Séchage terminé, impression lancée", f"{name} — séchage terminé ({reason}).")
+        except Exception as e:
+            print("dry_then_print :", e, flush=True)
 
 
 @app.post("/api/files/delete")

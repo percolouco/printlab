@@ -867,7 +867,9 @@ routes.box = async (el) => {
       <label>Arrêt si humidité ≤ (%)<br><input type="number" id="heatu" min="0" max="100" step="1" value="15" style="width:90px"></label>
       <button class="btn primary" id="heatgo">Démarrer le séchage</button></div>
       ${hp.reason ? `<div class="mut sm" style="margin-top:8px">Dernier séchage terminé : ${esc(hp.reason)}</div>` : ''}`}
-    ${hp.printing ? '<div class="mut sm" style="margin-top:8px">Une impression est en cours.</div>' : ''}</div>
+    ${hp.printing ? '<div class="mut sm" style="margin-top:8px">Une impression est en cours.</div>' : ''}
+    ${hp.pending_print ? `<div class="pdry-pend"><span class="tag ok">impression programmée</span> <b data-notr>${esc(flName(hp.pending_print.path))}</b> démarrera automatiquement à la fin du séchage.
+      <button class="btn sm" id="pendx">Annuler l'impression programmée</button></div>` : ''}</div>
   <div class="slots">${b.slots.map(s => { const x = sp(s.sid); return `<div class="sc ${s.loaded ? 'ld' : ''}" id="sc${s.slot}">
     <div class="sh"><span class="sn2">${slotName(s.slot)}</span>${s.loaded ? '<span class="tag ok">chargé</span>' : ''}${s.rfid ? (s.rfid_brand === 'bambu' ? `<span class="tag ok" title="Puce d'origine Bambu Lab lue par la Box : bobine du stock associée automatiquement (même matière, couleur la plus proche)">RFID Bambu</span>` : `<span class="tag ok" title="Étiquette RFID lue par la Box : bobine associée automatiquement">RFID</span>`) : ''}<span class="tag ${s.box_inserted ? '' : 'warn'}">${s.box_inserted ? 'bobine détectée' : 'vide'}</span></div>
     ${s.rfid_brand === 'bambu' && !s.rfid_linked ? `<div class="mut sm" style="color:var(--warn)">Puce Bambu lue (${esc(s.printer_filament_name || '')}) : aucune bobine de ton stock ne correspond. Ajoute-la dans Filaments pour qu'elle soit suivie.</div>` : ''}
@@ -879,7 +881,9 @@ routes.box = async (el) => {
     <select data-slot="${s.slot}"><option value="">— aucune bobine —</option>${spools.map(y => `<option value="${y.id}" ${y.id === s.sid && !s.empty ? 'selected' : ''}>#${y.id} ${esc(y.vendor_name)} ${esc(y.filament_name)} (${g(y.remaining_weight)})</option>`).join('')}</select></div>`; }).join('')}</div></div>`;
   const hg = $('#heatgo'), hs = $('#heatstop');
   if (hg) hg.onclick = () => act(async () => { await api('/box/heat', {method: 'POST', body: {temp: +$('#heatt').value, hours: +$('#heath').value, hum_stop: +$('#heatu').value}}); route(); }, 'Séchage démarré');
-  if (hs) hs.onclick = () => act(async () => { await api('/box/heat/stop', {method: 'POST'}); route(); }, 'Séchage arrêté');
+  if (hs) hs.onclick = async () => { if (hp.pending_print && !confirm('Arrêter le séchage annule aussi l\'impression programmée. Continuer ?')) return;
+    act(async () => { await api('/box/heat/stop', {method: 'POST'}); if (hp.pending_print) await api('/files/print/pending', {method: 'DELETE'}); route(); }, 'Séchage arrêté'); };
+  const px = $('#pendx'); if (px) px.onclick = () => act(async () => { await api('/files/print/pending', {method: 'DELETE'}); route(); }, 'Impression programmée annulée');
   el.querySelectorAll('select[data-slot]').forEach(x => x.onchange = () => act(async () => { await api('/box/slots/' + x.dataset.slot, {method: 'PUT', body: {spool_id: x.value ? Number(x.value) : null}}); route(); }, 'Association enregistrée'));
   el.querySelectorAll('[data-relay]').forEach(x => x.onchange = () => { if (x.value === '') return; act(async () => { x.disabled = true; try { await api('/box/slots/' + x.dataset.relay + '/relay', {method: 'POST', body: {source: Number(x.value)}}); } finally { x.disabled = false; } route(); }, 'Bobine de relais déclarée'); });
   el.querySelectorAll('[data-sync]').forEach(x => x.onclick = () => act(async () => { x.disabled = true; try { await api('/box/slots/' + x.dataset.sync + '/sync', {method: 'POST'}); } finally { x.disabled = false; } route(); }, 'Imprimante synchronisée'));
@@ -1062,8 +1066,8 @@ routes.jobs = async (el) => {
       $('#rok').onclick = () => act(async () => { await api(`/tracks/${t.id}/meta`, {method: 'PUT', body: {rating: k, note: $('#rn').value}}); closeModal(); route(); }, 'Enregistré');
     } else if (b.dataset.again) {
       const t = j.items.find(x => x.id === +b.dataset.again);
-      const ch = await mapDialog('Relancer l\'impression', `Relancer « <b>${esc(flName(t.file.path))}</b> » sur la QIDI ? Vérifie que le plateau est dégagé.`, t.file.filaments || [], 'Imprimer');
-      if (ch && await act(() => api('/files/print', {method: 'POST', body: {path: t.file.path, mapping: ch.map, relays: ch.relays}}), 'Impression lancée')) location.hash = '#/printer';
+      const ch = await mapDialog('Relancer l\'impression', `Relancer « <b>${esc(flName(t.file.path))}</b> » sur la QIDI ? Vérifie que le plateau est dégagé.`, t.file.filaments || [], 'Imprimer', {secs: flTime(t.file)});
+      if (ch && await act(() => api('/files/print', {method: 'POST', body: {path: t.file.path, mapping: ch.map, relays: ch.relays, dry: ch.dry}}), printMsg(ch))) location.hash = printDest(ch);
     } else if (b.id === 'tlclean') {
       const days = +$('#tlage').value;
       if (!confirm(`Supprimer définitivement de l'imprimante les timelapses de plus de ${days} jours ?`)) return;
@@ -1140,8 +1144,14 @@ const boxLbl = i => i === EXT ? 'Ext' : `${Math.floor(i / 4) + 1}${'ABCD'[i % 4]
 const rgbOf = h => { const m = /^#?([0-9a-f]{6})/i.exec(h || ''); const n = m ? parseInt(m[1], 16) : 0x808080; return [n >> 16, (n >> 8) & 255, n & 255]; };
 const inkOf = h => { const [r, g0, b] = rgbOf(h); return 0.299 * r + 0.587 * g0 + 0.114 * b > 150 ? '#1b1b1b' : '#fff'; };
 const cDist = (a, b) => { const p = rgbOf(a), q = rgbOf(b); return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]); };
-async function mapDialog(title, intro, fl, okLabel) {
-  const [box, spools] = await Promise.all([api('/box'), api('/spools')]);
+const printMsg = ch => ch.dry?.mode === 'before' ? 'Séchage démarré : l\'impression sera lancée à la fin' : ch.dry ? 'Séchage démarré, impression lancée' : 'Impression lancée';
+const printDest = ch => ch.dry?.mode === 'before' ? '#/box' : '#/printer';
+// séchage conseillé par matière : [température °C (max Box 65), durée h]
+const DRY_MAT = [['PETG', 55, 4], ['PET', 60, 4], ['PLA', 45, 4], ['ABS', 60, 4], ['ASA', 60, 4], ['TPU', 50, 6], ['PVA', 50, 6], ['HIPS', 55, 4], ['PA', 65, 8], ['PC', 65, 6]];
+const dryOf = t => DRY_MAT.find(([k]) => String(t || '').toUpperCase().startsWith(k));
+
+async function mapDialog(title, intro, fl, okLabel, opts = {}) {
+  const [box, spools, heat] = await Promise.all([api('/box'), api('/spools'), api('/box/heat').catch(() => ({}))]);
   const sp = Object.fromEntries(spools.map(x => [x.id, x]));
   const slots = (box.slots || []).map(x => ({index: x.slot, loaded: x.box_inserted !== false, type: (x.printer_type || '').toUpperCase(), color: '#' + (x.printer_color || '808080'),
     name: x.printer_filament_name || '', spool: x.spool_id ? sp[x.spool_id] : null, relay_of: x.relay_of}));
@@ -1159,6 +1169,7 @@ async function mapDialog(title, intro, fl, okLabel) {
     document.addEventListener('mousedown', out, true);
     modal(`<h2>${esc(title)}</h2><p>${intro}</p><div class="pmap"><div class="pmap-grid"><div class="pmap-lbl"><span>Fichier</span><span>Box</span></div><div class="pmap-cols"></div></div>
       <p class="mut sm">Clique sur une case de la Box pour choisir l'emplacement utilisé par chaque filament.</p><div class="pmap-warn"></div></div>
+      <div class="pdry"></div>
       <div class="acts"><button class="btn" data-r="0">Annuler</button><button class="btn primary" data-r="1">${esc(okLabel)}</button></div>`);
     const M = $('#modal'), cols = M.querySelector('.pmap-cols');
     const info = i => i === EXT ? {index: EXT, loaded: true, type: '', color: '#F2F2F2', name: 'Bobine externe'} : slots[i] || {index: i, loaded: false, color: '#808080'};
@@ -1208,8 +1219,35 @@ async function mapDialog(title, intro, fl, okLabel) {
       pop.style.top = (r.bottom + 6 + pop.offsetHeight > innerHeight ? Math.max(8, r.top - 6 - pop.offsetHeight) : r.bottom + 6) + 'px';
       pop.querySelectorAll('[data-s]').forEach(b => b.onclick = e => { e.stopPropagation(); map[t] = +b.dataset.s; pop.remove(); pop = null; render(); });
     };
+    // séchage de la Box avant ou pendant l'impression
+    const D = M.querySelector('.pdry'), mats = tools.map(x => dryOf(x.type)).filter(Boolean);
+    const dDef = mats.length ? {temp: Math.min(...mats.map(m => m[1])), hours: Math.max(...mats.map(m => m[2]))} : {temp: 50, hours: 4};
+    const dry = {mode: 'none', temp: dDef.temp, hours: dDef.hours, hum_stop: 15};
+    const hum = box.humidity != null ? +box.humidity : null, pend = heat.pending_print;
+    const renderDry = () => {
+      const chip = (k, l) => `<button class="chip ${dry.mode === k ? 'on' : ''}" data-dm="${k}"${pend && k !== 'none' ? ' disabled' : ''}>${l}</button>`;
+      const durP = opts.secs ? dur(opts.secs) : null;
+      D.innerHTML = `<div class="pdry-h"><b>Séchage du filament</b>${hum != null ? ` <span class="mut sm">· Box à <b class="${hum >= 30 ? 'warnc' : ''}">${fmt(hum, 0)} %</b> d'humidité</span>` : ''}</div>
+        ${hum != null && hum >= 30 && dry.mode === 'none' ? `<p class="sm" style="color:var(--warn);margin:4px 0">⚠ Humidité élevée dans la Box : un séchage est conseillé.</p>` : ''}
+        <div class="chips">${chip('none', 'Pas de séchage')}${chip('before', 'Sécher avant')}${chip('during', 'Sécher pendant')}</div>
+        ${pend ? `<p class="mut sm">Une impression attend déjà la fin d'un séchage (${esc(flName(pend.path))}).</p>` : ''}
+        ${dry.mode === 'none' ? '' : `<div class="pdry-f"><label>Température<br><input type="number" data-dk="temp" min="30" max="65" step="1" value="${dry.temp}"> °C</label>
+          ${dry.mode === 'before' ? `<label>Durée max<br><input type="number" data-dk="hours" min="0.25" max="24" step="0.25" value="${dry.hours}"> h</label>
+          <label>Ou dès l'humidité ≤<br><input type="number" data-dk="hum_stop" min="0" max="100" step="1" value="${dry.hum_stop}"> %</label>` : ''}</div>
+          <p class="mut sm" style="margin:6px 0 0">${dry.mode === 'before'
+            ? (heat.active ? `<span>Un séchage est déjà en cours (${fmt(heat.target, 0)} °C) : l'impression démarrera automatiquement à sa fin.</span> ` : '<span>La Box chauffe, puis l\'impression démarre automatiquement à la fin du séchage.</span> ') + '<span>Laisse le plateau dégagé ; tu seras prévenu au lancement.</span>'
+            : `<span>${durP ? `La Box chauffe pendant toute l'impression (${durP} + 30 min).` : 'La Box chauffe pendant toute l\'impression (4 h par défaut).'}</span>`}
+            ${mats.length ? ` <span>Réglage proposé pour ${[...new Set(tools.map(x => x.type).filter(Boolean))].map(esc).join(' + ')}.</span>` : ''}</p>`}`;
+      D.querySelectorAll('[data-dm]').forEach(b => b.onclick = () => { dry.mode = b.dataset.dm; renderDry(); });
+      D.querySelectorAll('[data-dk]').forEach(i => i.oninput = () => { dry[i.dataset.dk] = +i.value; });
+      ok.textContent = dry.mode === 'before' ? 'Sécher puis imprimer' : okLabel;
+    };
+    const ok = M.querySelector('[data-r="1"]');
+    renderDry();
     render();
-    M.querySelectorAll('[data-r]').forEach(b => b.onclick = () => fin(b.dataset.r === '1' ? {map, relays: Object.entries(relays).filter(([, r]) => r.on).map(([m, r]) => ({source: +m, slot: r.c}))} : null));
+    M.querySelectorAll('[data-r]').forEach(b => b.onclick = () => fin(b.dataset.r === '1' ? {map, relays: Object.entries(relays).filter(([, r]) => r.on).map(([m, r]) => ({source: +m, slot: r.c})),
+      dry: dry.mode === 'none' ? null : {mode: dry.mode, temp: dry.temp, hum_stop: dry.mode === 'during' ? 0 : dry.hum_stop,
+        hours: dry.mode === 'during' ? Math.min(24, Math.max(0.25, Math.round(((opts.secs || 4 * 3600) / 3600 + 0.5) * 4) / 4)) : dry.hours}} : null));
     M.onclick = e => { if (e.target === M) fin(null); };
   });
 }
@@ -1371,9 +1409,9 @@ routes.files = async (el) => {
   const fileAct = async (a, f, fl, h) => {
     if (a === 'print') {
       const t = flTime(f);
-      const ch = await mapDialog('Lancer l\'impression', `Lancer « <b>${esc(flName(f.path))}</b> » sur la QIDI ? Durée estimée : ${t ? dur(t) : 'inconnue'}. Vérifie que le plateau est dégagé.`, fl, 'Imprimer');
+      const ch = await mapDialog('Lancer l\'impression', `Lancer « <b>${esc(flName(f.path))}</b> » sur la QIDI ? Durée estimée : ${t ? dur(t) : 'inconnue'}. Vérifie que le plateau est dégagé.`, fl, 'Imprimer', {secs: t});
       if (!ch) return;
-      if (await act(() => api('/files/print', {method: 'POST', body: {path: f.path, mapping: ch.map, relays: ch.relays}}), 'Impression lancée')) { closeDrawer(); location.hash = '#/printer'; }
+      if (await act(() => api('/files/print', {method: 'POST', body: {path: f.path, mapping: ch.map, relays: ch.relays, dry: ch.dry}}), printMsg(ch))) { closeDrawer(); location.hash = printDest(ch); }
     } else if (a === 'del') {
       if (!confirm(`Supprimer définitivement « ${f.path} » de l'imprimante ?\nCette action est irréversible.`)) return;
       if (await act(() => api('/files/delete', {method: 'POST', body: {path: f.path}}), 'Fichier supprimé')) { closeDrawer(); await reload(); }
