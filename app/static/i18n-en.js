@@ -2137,6 +2137,8 @@ window.PL_EN = {
 "Séchage démarré, impression lancée": "Drying started, print launched",
 "impression programmée": "scheduled print",
 "démarrera automatiquement à la fin du séchage.": "will start automatically when drying ends.",
+"Orca : Conflit de trajectoires détecté entre {} (objets très proches) : découpé quand même, comme QIDI Studio. Vérifie l'aperçu.": "Orca: path conflict detected between {} (objects very close): sliced anyway, like QIDI Studio does. Check the preview.",
+"Orca : Conflit de trajectoires détecté (objets très proches) : découpé quand même, comme QIDI Studio. Vérifie l'aperçu.": "Orca: path conflict detected (objects very close): sliced anyway, like QIDI Studio does. Check the preview.",
 "Annuler l'impression programmée": "Cancel scheduled print",
 "Arrêter le séchage annule aussi l'impression programmée. Continuer ?": "Stopping the drying also cancels the scheduled print. Continue?",
 "Impression programmée annulée": "Scheduled print cancelled",

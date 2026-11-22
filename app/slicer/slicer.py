@@ -324,14 +324,12 @@ def _cfg_str(v):
 
 # ---------- découpe ----------
 
-async def run_slice(job_dir: Path, project: Path, plate: int = 0):
-    """plate : numéro du plateau à découper (1..n), 0 = tous."""
-    out = job_dir / "out"
-    out.mkdir(exist_ok=True)
-    ORCA_DATADIR.mkdir(parents=True, exist_ok=True)
-    cmd = ["xvfb-run", "-a", str(ORCA_BIN), "--datadir", str(ORCA_DATADIR), "--allow-newer-file",
-           "--slice", str(int(plate)), "--outputdir", str(out), str(project)]
+CLI_GCODE_PATH_CONFLICTS = -101   # code de sortie du CLI Orca/Bambu
+
+
+async def _orca(cmd, job_dir: Path, out: Path):
     env = dict(os.environ, HOME=str(DATA_DIR), XDG_RUNTIME_DIR="/tmp")
+    (out / "result.json").unlink(missing_ok=True)
     async with _slice_lock:
         t0 = time.time()
         proc = await asyncio.create_subprocess_exec(*cmd, cwd=str(job_dir), env=env,
@@ -343,16 +341,47 @@ async def run_slice(job_dir: Path, project: Path, plate: int = 0):
             raise RuntimeError("La découpe a dépassé le temps limite")
         dt = time.time() - t0
     log = stdout.decode(errors="replace")
-    (job_dir / "slice.log").write_text(log)
-    result = {}
+    with open(job_dir / "slice.log", "a") as f:
+        f.write(" ".join(cmd[2:]) + "\n" + log + "\n")
     rj = out / "result.json"
-    if rj.exists():
-        result = json.loads(rj.read_text())
+    result = json.loads(rj.read_text()) if rj.exists() else {}
+    return log, result, dt
+
+
+def _conflict_detail(job_dir: Path, log: str):
+    """« A et B » d'après la ligne « gcode path conflicts found between A and B » du journal d'Orca."""
+    texts = [log] + [p.read_text(errors="replace") for p in job_dir.glob("*.log") if p.name != "slice.log"]
+    for t in texts:
+        m = re.search(r"conflicts found between (.+?) and (.+?)\s*$", t, re.M)
+        if m:
+            a, b = (x.strip() for x in m.groups())
+            return f"deux « {a} »" if a == b else f"« {a} » et « {b} »"
+    return ""
+
+
+async def run_slice(job_dir: Path, project: Path, plate: int = 0):
+    """plate : numéro du plateau à découper (1..n), 0 = tous."""
+    out = job_dir / "out"
+    out.mkdir(exist_ok=True)
+    ORCA_DATADIR.mkdir(parents=True, exist_ok=True)
+    base = ["xvfb-run", "-a", str(ORCA_BIN), "--datadir", str(ORCA_DATADIR), "--allow-newer-file"]
+    tail = ["--slice", str(int(plate)), "--outputdir", str(out), str(project)]
+    log, result, dt = await _orca(base + tail, job_dir, out)
+    extra = []
+    if result.get("return_code") == CLI_GCODE_PATH_CONFLICTS and not list(out.glob("*.gcode")):
+        # Le CLI d'Orca refuse tout « conflit de trajectoires » (objets très proches, souvent un faux positif),
+        # là où Orca / QIDI Studio en interface affichent un simple avertissement : on relance sans ce contrôle
+        # (les autres vérifications sont déjà passées, le conflit n'est cherché qu'après la découpe).
+        detail = _conflict_detail(job_dir, log)
+        log, result, dt2 = await _orca(base + ["--no-check"] + tail, job_dir, out)
+        dt += dt2
+        extra.append("Conflit de trajectoires détecté" + (f" entre {detail}" if detail else "") +
+                     " (objets très proches) : découpé quand même, comme QIDI Studio. Vérifie l'aperçu.")
     gcodes = sorted(out.glob("*.gcode"))
     if not gcodes:
         msg = result.get("error_string") or log.strip().splitlines()[-1:] or ["échec inconnu"]
         raise RuntimeError(f"Échec de la découpe : {msg if isinstance(msg, str) else msg[0]}")
-    warnings = [p.get("warning_message") for p in result.get("sliced_plates", []) if p.get("warning_message")]
+    warnings = extra + [p.get("warning_message") for p in result.get("sliced_plates", []) if p.get("warning_message")]
     return gcodes[0], {"duration": round(dt, 1), "warnings": warnings}
 
 
