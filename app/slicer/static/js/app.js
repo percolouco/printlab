@@ -325,9 +325,9 @@ function renderFilaments() {
   const el = $('filament-list');
   el.innerHTML = '';
   const qidiFirst = (f) => f.vendor === 'Utilisateur' ? 'Utilisateur' : f.vendor === 'OrcaFilamentLibrary' ? 'Bibliothèque Orca' : f.vendor;
-  // « Mes filaments » : seuls les profils cochés sont proposés (+ ceux déjà utilisés dans le projet) ; rien de coché = tout
+  // « Mes filaments » : seuls les profils cochés sont proposés (+ ceux déjà utilisés dans le projet et tes profils perso) ; rien de coché = tout
   const fav = new Set(S.favs), used = new Set(S.filaments.map((f) => f.profile));
-  const shown = fav.size ? S.filamentChoices.filter((f) => fav.has(f.name) || used.has(f.name)) : S.filamentChoices;
+  const shown = fav.size ? S.filamentChoices.filter((f) => f.user || fav.has(f.name) || used.has(f.name)) : S.filamentChoices;
   const opts = groupOptions(shown, qidiFirst, true) + `<optgroup label="──────────"><option value="__favs__">${fav.size ? 'Mes filaments… (' + fav.size + ' cochés)' : 'Choisir mes filaments…'}</option></optgroup>`;
   syncMixed();
   S.filaments.forEach((f, i) => {
