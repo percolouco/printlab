@@ -62,10 +62,26 @@ def _find(vendor, kind, name):
     raise KeyError(f"profil {kind} introuvable : {name}")
 
 
+# Clés synonymes : les profils QIDI écrivent « chamber_temperature », la bibliothèque OrcaFilamentLibrary
+# « chamber_temperatures ». Orca les fusionne à la lecture d'un preset ; dans un 3MF de projet, la forme
+# « s » l'emporte. Sans cette harmonisation, une Bambu PLA (chamber_temperatures = 0) à côté d'une ABS QIDI
+# (chamber_temperature = 55) donnait un caisson à 0 pour tout le monde.
+ALIASES = [("chamber_temperature", "chamber_temperatures")]
+
+
+def _alias(data):
+    for a, b in ALIASES:
+        if a in data and b not in data:
+            data[b] = data[a]
+        elif b in data and a not in data:
+            data[a] = data[b]
+    return data
+
+
 @lru_cache(maxsize=4096)
 def _resolve_system(vendor, kind, name):
     v, path = _find(vendor, kind, name)
-    data = _load_json(path)
+    data = _alias(dict(_load_json(path)))
     parent = data.get("inherits")
     if parent:
         base = dict(_resolve_system(v, kind, parent))
@@ -80,7 +96,7 @@ def resolve(kind, name, vendor=None):
     user = load_user(kind, name)
     if user is not None:
         cfg = dict(resolve(kind, user["inherits"], user.get("vendor")))
-        cfg.update(user.get("settings", {}))
+        cfg.update(_alias(dict(user.get("settings", {}))))
         cfg["name"] = name
         return cfg
     if vendor is None:
