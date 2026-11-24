@@ -501,6 +501,6 @@ main:has(> .sim){max-width:none}
   .pwa #toast{bottom:calc(70px + env(safe-area-inset-bottom))}
 }
 /* emplacement chargé : halo vert (couleur du trait de gauche) qui pulse autour de toute la carte */
-.sc.ld{animation:ldhalo 2s ease-in-out infinite}
+.sc.ld{animation:ldhalo 2s ease-in-out infinite;border-left:1px solid var(--line)}
 @keyframes ldhalo{0%,100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--ok) 35%,transparent),0 0 6px 0 color-mix(in srgb,var(--ok) 20%,transparent)}50%{box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 80%,transparent),0 0 18px 3px color-mix(in srgb,var(--ok) 45%,transparent)}}
 @media (prefers-reduced-motion:reduce){.sc.ld{animation:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 60%,transparent)}}
