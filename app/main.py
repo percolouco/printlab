@@ -1231,14 +1231,36 @@ async def box():
         # réglage attendu côté imprimante pour la bobine associée, et accord avec ce que la Box indique
         if sl["spool_id"] and codes:
             try:
-                t = rfid.qidi_target(QCAT, codes, get_spool(sl["spool_id"]))
+                sp = get_spool(sl["spool_id"])
+                t = rfid.qidi_target(QCAT, codes, sp)
                 sl["sync_target"] = t
-                sl["in_sync"] = sl["printer_filament"] == t["code"] and (sl["printer_color"] or "").upper() == t["color"]
+                sl["in_sync"] = _slot_matches(sl, t, sp.get("color_hex"))
             except (ValueError, HTTPException) as e:
                 sl["sync_error"] = getattr(e, "detail", None) or str(e)
     return {"online": True, "loaded_slot": b.get("loaded_slot"), "humidity": b.get("box0_aht20_humidity"),
             "temp": b.get("box0_aht20_temp"), "target_temp": b.get("box0_box_target_temp"),
             "dry_state": b.get("box0_dry_state"), "box_online": bool(b.get("box0_is_online")), "slots": slots}
+
+
+def _slot_matches(sl, t, spool_hex=None):
+    """La Box porte-t-elle déjà ce que PrintLab y écrirait ? Une bobine lue par RFID arrive avec son code exact
+    (ex. QFZ17 « Bambu PLA Basic » plutôt que QFL30 « Bambu PLA ») et sa teinte exacte (pas la plus proche des 24) :
+    même marque + même matière + teinte proche suffit, comme la tolérance de l'écran (#FAFAFA ≈ #FFFFFF)."""
+    pc = (sl.get("printer_color") or "").upper()
+    if sl.get("printer_filament") == t["code"] and pc == t["color"]:
+        return True
+    name = (sl.get("printer_filament_name") or "").lower()
+    same_fil = sl.get("printer_filament") == t["code"] or (
+        (sl.get("printer_type") or "").upper() == (t.get("type") or "").upper()
+        and not t.get("generic") and name.startswith((t.get("vendor") or "").lower() + " "))
+    def near(h):
+        try:
+            a, b = [tuple(int(x[i:i + 2], 16) for i in (0, 2, 4)) for x in (pc, (h or "").upper())]
+        except (ValueError, IndexError):
+            return False
+        return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5 <= 60
+    # teinte : la plus proche des 24 (synchro PrintLab) ou celle de la bobine (étiquette RFID)
+    return same_fil and (near(t["color"]) or near(spool_hex))
 
 
 @app.get("/api/box/heat")
