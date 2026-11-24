@@ -500,7 +500,7 @@ main:has(> .sim){max-width:none}
   .pwa .selbar{bottom:calc(66px + env(safe-area-inset-bottom))}
   .pwa #toast{bottom:calc(70px + env(safe-area-inset-bottom))}
 }
-/* emplacement chargé : halo qui pulse autour du numéro, comme la pastille de l'illustration de la Box */
-.sc.ld .sn2{position:relative;padding:3px 9px;border-radius:999px;border:2px solid #e08a57;margin-left:-4px}
-.sc.ld .sn2:after{content:"";position:absolute;inset:-6px;border-radius:999px;border:2px solid #e08a57;animation:bar 1.8s ease-in-out infinite;pointer-events:none}
-@media (prefers-reduced-motion:reduce){.sc.ld .sn2:after{animation:none;opacity:.5}}
+/* emplacement chargé : halo vert (couleur du trait de gauche) qui pulse autour de toute la carte */
+.sc.ld{animation:ldhalo 2s ease-in-out infinite}
+@keyframes ldhalo{0%,100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--ok) 35%,transparent),0 0 6px 0 color-mix(in srgb,var(--ok) 20%,transparent)}50%{box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 80%,transparent),0 0 18px 3px color-mix(in srgb,var(--ok) 45%,transparent)}}
+@media (prefers-reduced-motion:reduce){.sc.ld{animation:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 60%,transparent)}}
