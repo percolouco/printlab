@@ -1768,6 +1768,8 @@ window.PL_EN = {
 "imprimante (maintenant)": "printer (now)",
 "imprimante pas à jour": "printer not up to date",
 "imprimante à jour": "printer up to date",
+"lue par RFID": "read by RFID",
+"l'imprimante a les infos exactes de l'étiquette": "the printer has the exact tag data",
 "imprimante(s) cochée(s)": "printer(s) ticked",
 "inconnue": "unknown",
 "indisponible": "unavailable",

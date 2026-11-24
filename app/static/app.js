@@ -834,6 +834,8 @@ const syncLine = (s, all) => {
   if (s.relay_of != null) return `<div class="syncl"><div class="mut sm"><span class="tag ok">relais de la n°${s.relay_of + 1}</span> l'imprimante la voit comme la n°${s.relay_of + 1} : la Box basculera dessus quand la n°${s.relay_of + 1} sera vide. Le décompte reste sur cette bobine.</div>
     <button class="btn sm" data-sync="${s.slot}" title="Rend à cette bobine sa vraie identité côté imprimante">Fin du relais : synchroniser</button></div>`;
   const what = `${esc(t.name)}${t.generic ? ' (marque absente de la liste QIDI)' : ''} · <span class="sw" style="background:#${esc(t.color)}"></span>#${esc(t.color)}`;
+  // bobine lue par RFID et conforme : l'imprimante a déjà les infos exactes de l'étiquette, rien à synchroniser
+  if (s.rfid_linked && s.in_sync) return `<div class="syncl"><div class="mut sm"><span class="tag ok">lue par RFID</span> l'imprimante a les infos exactes de l'étiquette</div>${relaySel ? `<div class="row2">${relaySel}</div>` : ''}</div>`;
   return `<div class="syncl"><div class="mut sm">${s.in_sync ? '<span class="tag ok">imprimante à jour</span>' : '<span class="tag warn">imprimante pas à jour</span>'} ${what}</div>
     <div class="row2"><button class="btn ${s.in_sync ? '' : 'primary'} sm" data-sync="${s.slot}" title="Envoie marque, matière et couleur à l'imprimante (aucun chargement ni déchargement)">Synchroniser avec l'imprimante</button>${relaySel}</div></div>`;
 };
